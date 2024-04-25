@@ -9,10 +9,14 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo-google-fonts/corben": "^0.2.3",
+    "@react-hook/async": "^3.1.1",
     "expo": "~50.0.14",
+    "expo-font": "~11.10.3",
     "expo-status-bar": "~1.11.1",
     "react": "18.2.0",
-    "react-native": "0.73.6"
+    "react-native": "0.73.6",
+    "wikipedia": "^2.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

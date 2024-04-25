@@ -1,21 +1,13 @@
-import css from '../styles/global.js'
-import { StyleSheet, TextInput, Text, View } from 'react-native';
-/*
-import { Context } from '../pages/_app';
-import { useRef,useEffect,useContext } from 'react';
-*/
+import css from "../styles/global.js"
+import { StyleSheet, TextInput, Text, View} from "react-native"
+import { useRef,useEffect,useContext } from "react"
+import { Context } from "../Context"
+
 export default function SearchBar({children}){
-
-
-  const handleTyping = event => {
-
-    console.log(event)
-  }
-
-  /*
-  const ref = useRef(null);
-  const ctx = useContext(Context);
-  let timeout = null;
+  
+  const ref = useRef(null)
+  const ctx = useContext(Context)
+  let timeout = null
 
   const handleTyping = event => {
 
@@ -29,17 +21,21 @@ export default function SearchBar({children}){
           ctx.setStatus("typing")
 
     },1500)
-  };
-  */
+  }
 
-  
   return(
+    
   <View style={styles.searchBar}>  
-    <TextInput onChangeText={handleTyping} placeholder="What's your interest?"/>
+    <TextInput style={styles.searchBarInput} 
+      onChangeText={handleTyping} 
+      placeholder="What's your interest?" 
+      placeholderTextColor="slategray"
+      textAlign="center"
+    />
   </View>
   )
 
 }
 
 
-const styles = StyleSheet.create({searchBar:{...css.searchBar}})
+const styles = StyleSheet.create({...css})
