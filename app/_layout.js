@@ -29,7 +29,7 @@ export default function Layout() {
     clearTimeout(timeoutId.current);
     timeoutId.current = setTimeout(() => {
       setStatus({ action: "search", value: change });
-    }, 3000);
+    }, 2000);
   };
 
   return (

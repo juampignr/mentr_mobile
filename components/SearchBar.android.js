@@ -16,10 +16,11 @@ export default function SearchBar({ children, onType }) {
   const ref = useRef(null);
   const insets = useSafeAreaInsets();
 
+  /*
   const onSubmit = () => {
     ctx.setStatus({ action: "submitSearch" });
   };
-
+  */
   let timeout = null;
 
   return (
@@ -31,7 +32,6 @@ export default function SearchBar({ children, onType }) {
       <TextInput
         style={styles.searchBarInput}
         onChangeText={onType}
-        onSubmitEditing={onSubmit}
         placeholder="What's your interest?"
         placeholderTextColor="#242424"
         textAlign="center"

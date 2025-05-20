@@ -8,7 +8,7 @@ export default css = {
   searchBar: {
     width: "95%",
     height: 60,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#ffffffaa",
     borderRadius: 15,
     borderWidth: 3,
     borderColor: "#242424",
@@ -24,10 +24,10 @@ export default css = {
     fontFamily: "Corben_400Regular",
     fontSize: 10,
     backgroundColor: "#fff",
-    marginTop: "10%",
   },
   pillsView: {
     maxHeight: "85%",
+    maxWidth: "95%",
     padding: 1,
     fontSize: 10,
     flex: 1,
@@ -36,6 +36,7 @@ export default css = {
     flexWrap: "wrap",
     columnGap: 5,
     rowGap: 10,
+    margin: "auto",
   },
   pill: {
     borderRadius: 50,
@@ -63,10 +64,10 @@ export default css = {
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     padding: 20,
-    borderWidth: 1,
-    borderColor: "#7c8c9c87",
+    borderWidth: 2,
+    borderColor: "#b147ff22",
     backgroundColor: "#2196f303",
-    shadowColor: "#70809042",
+    shadowColor: "#708090",
     shadowOffset: { width: -2, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
@@ -74,10 +75,11 @@ export default css = {
   },
   cardTitle: {
     fontFamily: "Corben_400Regular",
-    fontSize: 15,
+    fontSize: 16,
     textAlign: "center",
-    color: "#7c8c9c",
-    marginBottom: 15,
+    color: "#b147ff99",
+    marginBottom: 10,
+    lineHeight: 25,
   },
   cardSummary: {
     fontFamily: "Corben_400Regular",
@@ -99,5 +101,6 @@ export default css = {
   },
   swipeableView: {
     flex: 1,
+    marginTop: "10%",
   },
 };

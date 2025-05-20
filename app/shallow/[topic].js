@@ -76,94 +76,228 @@ export default function Shallow() {
   const timeoutId = useRef(0);
   const pageLimit = useRef(10);
 
-  const [related, setRelated] = useState([new Map()]);
+  const [pageNumber, setPageNumber] = useState(0);
+  const [related, setRelated] = useState([]);
+  const [pagesMatrix, setPagesMatrix] = useState([]);
+
+  const [swipeableView, setSwipeableView] = useState([]);
 
   const { topic } = useLocalSearchParams();
 
-  console.log(topic);
+  const searchTopic = async (topic) => {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const response = await fetch(url);
 
-  useAsyncEffect(async () => {
-    let response = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(topic)}&srwhat=text&srlimit=10&srprop=snippet&format=json&origin=*`,
-    );
     const data = await response.json();
-    for (const r of data.query.search) {
-      show(r);
-    }
-    //similarPages.forEach((element) => {
-    //  setRelated([...related, new Map([[element?.pageid, element?.title]])]);
-    //});
-  }, []);
-}
-/*
-export default function Shallow() {
-  const ctx = useContext(Context);
 
-  const timeoutId = useRef(0);
-  const pageLimit = useRef(10);
+    let pages = Object.values(data.query.pages).filter((page) => page.extract);
 
-  const [related, setRelated] = useState([new Map()]);
+    pages = pages.filter((page) => page.extract);
 
-  const { topic } = useLocalSearchParams();
+    const formattedData = pages.map((page) => ({
+      id: page.pageid.toString(),
+      title: page.title,
+      summary: page.extract,
+    }));
 
-  console.log(topic);
+    return formattedData;
+  };
 
-  const updateRelated = async (topic, paginate = false, index = 0) => {
-    if (paginate) pageLimit.current += 10;
+  /*
+  const populateCards = async (page = topic) => {
+    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`;
+    const topicResponse = await fetch(topicURL);
 
-    let suggestions = await ctx.wiki.search(topic, {
-      suggestion: true,
-      limit: pageLimit.current,
-    });
+    let topicData = await topicResponse.json();
+    topicData = Object.values(topicData.query.pages)[0];
 
-    suggestions = suggestions?.results;
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(page)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const response = await fetch(url);
 
-    const flatListData = [];
+    const data = await response.json();
 
-    if (paginate) {
-      suggestions = suggestions?.slice(pageLimit.current - 10);
+    let pages = Object.values(data.query.pages).filter((page) => page.extract);
 
-      for (const page of suggestions) {
-        const id = page?.pageid ?? 0;
-        const title = page?.title ?? "";
+    pages = pages.filter((page) => page.extract);
 
-        addRelated(index, id, title);
-      }
+    const formattedData = pages.map((page) => ({
+      id: page.pageid.toString(),
+      title: page.title,
+      summary: page.extract,
+    }));
+
+    if (page !== topic) {
+      setPagesMatrix((matrix) => [
+        ...matrix,
+        [
+          {
+            id: topicData.pageid,
+            title: topicData.title,
+            summary: topicData.extract,
+          },
+          ...formattedData,
+        ],
+      ]);
+
+      show(pagesMatrix);
+
+      setSwipeableView([
+        ...swipeableView,
+        <View>
+          <FlatList
+            data={[
+              {
+                id: topicData.pageid,
+                title: topicData.title,
+                summary: topicData.extract,
+              },
+              ...formattedData,
+            ]}
+            contentContainerStyle={{ alignItems: "center" }}
+            //onEndReached={paginationHandler}
+            renderItem={(item) => <Card>{item}</Card>}
+            keyExtractor={(item) => item.id}
+          />
+        </View>,
+      ]);
     } else {
-      if (related[index].size <= 1) {
-        for (const page of suggestions) {
-          const id = page?.pageid ?? 0;
-          const title = page?.title ?? "";
+      setPagesMatrix([
+        [
+          {
+            id: topicData.pageid,
+            title: topicData.title,
+            summary: topicData.extract,
+          },
+          ...formattedData,
+        ],
+      ]);
 
-          addRelated(index, id, title);
-        }
-      }
+      setSwipeableView([
+        <View>
+          <FlatList
+            data={[
+              {
+                id: topicData.pageid,
+                title: topicData.title,
+                summary: topicData.extract,
+              },
+              ...formattedData,
+            ]}
+            contentContainerStyle={{ alignItems: "center" }}
+            //onEndReached={paginationHandler}
+            renderItem={(item) => <Card>{item}</Card>}
+            keyExtractor={(item) => item.id}
+          />
+        </View>,
+      ]);
+
+      setRelated([
+        {
+          id: topicData.pageid,
+          title: topicData.title,
+          summary: topicData.extract,
+        },
+        ...formattedData,
+      ]);
+    }
+  };
+  */
+
+  const populateCards = async (page = topic, pageno = 0) => {
+    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`;
+    const topicResponse = await fetch(topicURL);
+
+    let topicData = await topicResponse.json();
+    topicData = Object.values(topicData.query.pages)[0];
+
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(page)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const response = await fetch(url);
+
+    const data = await response.json();
+
+    let pages = Object.values(data.query.pages).filter((page) => page.extract);
+
+    pages = pages.filter((page) => page.extract);
+
+    const formattedData = pages.map((page) => ({
+      id: page.pageid.toString(),
+      title: page.title,
+      summary: page.extract,
+    }));
+
+    if (pageno) {
+      setPagesMatrix((matrix) => [
+        ...matrix,
+        [
+          {
+            id: topicData.pageid,
+            title: topicData.title,
+            summary: topicData.extract,
+          },
+          ...formattedData,
+        ],
+      ]);
+
+      show(pagesMatrix);
+
+      setSwipeableView([
+        ...swipeableView,
+        <View>
+          <FlatList
+            data={pagesMatrix[pageno]}
+            contentContainerStyle={{ alignItems: "center" }}
+            //onEndReached={paginationHandler}
+            renderItem={(item) => <Card>{item}</Card>}
+            keyExtractor={(item) => item.id}
+          />
+        </View>,
+      ]);
+    } else {
+      setPagesMatrix([
+        [
+          {
+            id: topicData.pageid,
+            title: topicData.title,
+            summary: topicData.extract,
+          },
+          ...formattedData,
+        ],
+      ]);
+
+      setSwipeableView([
+        ...swipeableView,
+        <View>
+          <FlatList
+            data={pagesMatrix[0]}
+            contentContainerStyle={{ alignItems: "center" }}
+            //onEndReached={paginationHandler}
+            renderItem={(item) => <Card>{item}</Card>}
+            keyExtractor={(item) => item.id}
+          />
+        </View>,
+      ]);
+
+      setRelated([
+        {
+          id: topicData.pageid,
+          title: topicData.title,
+          summary: topicData.extract,
+        },
+        ...formattedData,
+      ]);
     }
   };
 
-  const paginationHandler = (event) => {
-    updateRelated(topic, true, 0).catch((error) => console.log(error));
+  const onSwipe = async (event) => {
+    setPageNumber(event.nativeEvent.position);
+
+    await populateCards(related[pageNumber]?.title, event.nativeEvent.position);
   };
+  useAsyncEffect(async () => {
+    await populateCards();
+  }, []);
 
-  const swipeHandler = (event) => {
-    const swipedTo = event?.nativeEvent?.position;
-
-    console.log(related[swipedTo][0]);
-    updateRelated(related[swipedTo][0], false, swipedTo).then((res) =>
-      console.log(related),
-    );
-  };
-
-  const addRelated = (index, key, value) => {
-    setRelated((lastObjectOfMaps) => {
-      if (lastObjectOfMaps.length - 1 < index) lastObjectOfMaps.push(new Map());
-
-      lastObjectOfMaps[index].set(key, value);
-
-      return lastObjectOfMaps;
-    });
-  };
-
+  /*
   useAsyncEffect(async () => {
     if (ctx.status.action === "search") {
       clearTimeout(timeoutId.current);
@@ -173,46 +307,15 @@ export default function Shallow() {
       }, 2000);
     }
   }, [ctx.status]);
-
-  useAsyncEffect(async () => {
-    await updateRelated(topic);
-
-    let similarPages = await (
-      await ctx.wiki.page(topic)
-    ).related({ redirect: true });
-    similarPages = similarPages?.pages ?? [];
-
-    similarPages.forEach((element) => {
-      setRelated([...related, new Map([[element?.pageid, element?.title]])]);
-    });
-    console.log(related);
-  }, []);
+  */
 
   return (
     <PagerView
       style={css.swipeableView}
       initialPage={0}
-      onPageSelected={swipeHandler}
+      onPageSelected={onSwipe}
     >
-      <View>
-        <FlatList
-          data={Array.from(related[0].values())}
-          contentContainerStyle={{ alignItems: "center" }}
-          onEndReached={paginationHandler}
-          renderItem={({ item }) => <Card>{item}</Card>}
-        />
-      </View>
-      {related.map((element) => {
-        <View>
-          <FlatList
-            data={Array.from(element.values())}
-            contentContainerStyle={{ alignItems: "center" }}
-            onEndReached={paginationHandler}
-            renderItem={({ item }) => <Card>{item}</Card>}
-          />
-        </View>;
-      })}
+      {swipeableView}
     </PagerView>
   );
 }
-*/
