@@ -1,4 +1,4 @@
-import { useContext, useState, useRef } from "react";
+import { useContext, useState, useRef, useEffect } from "react";
 import { FlatList, View } from "react-native";
 import { useAsyncEffect } from "@react-hook/async";
 import { Context } from "../_layout.js";
@@ -78,9 +78,9 @@ export default function Shallow() {
 
   const [pageNumber, setPageNumber] = useState(0);
   const [related, setRelated] = useState([]);
-  const [pagesMatrix, setPagesMatrix] = useState([]);
-
   const [swipeableView, setSwipeableView] = useState([]);
+  const [cardsData, setCardsData] = useState([]);
+  const [nextCardsData, setNextCardsData] = useState([]);
 
   const { topic } = useLocalSearchParams();
 
@@ -204,6 +204,7 @@ export default function Shallow() {
   */
 
   const populateCards = async (page = topic, pageno = 0) => {
+    show(pageno);
     const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL);
 
@@ -225,77 +226,129 @@ export default function Shallow() {
       summary: page.extract,
     }));
 
-    if (pageno) {
-      setPagesMatrix((matrix) => [
-        ...matrix,
-        [
+    setCardsData([
+      {
+        id: topicData.pageid,
+        title: topicData.title,
+        summary: topicData.extract,
+      },
+      ...formattedData,
+    ]);
+
+    setPageNumber(pageno);
+    /*
+      if (page != topic) {
+        setPageNumber(pageno);
+
+        setSwipeableView([
+          ...swipeableView,
+          <View>
+            <FlatList
+              data={cardsData}
+              contentContainerStyle={{ alignItems: "center" }}
+              onEndReached={paginationHandler}
+              renderItem={(item) => <Card>{item}</Card>}
+              keyExtractor={(item) => item.id}
+            />
+          </View>,
+        ]);
+      } else {
+        setPageNumber(0);
+
+        setSwipeableView([
+          <View>
+            <FlatList
+              data={cardsData}
+              contentContainerStyle={{ alignItems: "center" }}
+              onEndReached={paginationHandler}
+              renderItem={(item) => <Card>{item}</Card>}
+              keyExtractor={(item) => item.id}
+            />
+          </View>,
+        ]);
+
+        setRelated([
           {
             id: topicData.pageid,
             title: topicData.title,
             summary: topicData.extract,
           },
           ...formattedData,
-        ],
-      ]);
+        ]);
+      }
+      */
+  };
 
-      show(pagesMatrix);
+  const onSwipe = async (event) => {
+    show("Swiped!");
+    const viewPosition = event.nativeEvent.position;
 
+    if (!viewPosition) {
+      await populateCards(related[0]?.title, 0);
+    } else {
+      await populateCards(related[viewPosition]?.title, viewPosition);
+      await populateCards(related[viewPosition + 1]?.title, viewPosition + 1);
+    }
+  };
+
+  const paginationHandler = (event) => {
+    show(event);
+  };
+
+  useAsyncEffect(async () => {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const response = await fetch(url);
+
+    const data = await response.json();
+
+    let pages = Object.values(data.query.pages).filter((page) => page.extract);
+
+    pages = pages.filter((page) => page.extract);
+
+    const formattedData = pages.map((page) => ({
+      id: page.pageid.toString(),
+      title: page.title,
+      summary: page.extract,
+    }));
+
+    setRelated(formattedData);
+
+    await populateCards();
+  }, []);
+
+  useEffect(() => {
+    if (pageNumber > 0) {
       setSwipeableView([
         ...swipeableView,
         <View>
           <FlatList
-            data={pagesMatrix[pageno]}
+            data={cardsData}
             contentContainerStyle={{ alignItems: "center" }}
-            //onEndReached={paginationHandler}
+            onEndReached={paginationHandler}
             renderItem={(item) => <Card>{item}</Card>}
             keyExtractor={(item) => item.id}
           />
         </View>,
       ]);
     } else {
-      setPagesMatrix([
-        [
-          {
-            id: topicData.pageid,
-            title: topicData.title,
-            summary: topicData.extract,
-          },
-          ...formattedData,
-        ],
-      ]);
-
       setSwipeableView([
-        ...swipeableView,
         <View>
           <FlatList
-            data={pagesMatrix[0]}
+            data={cardsData}
             contentContainerStyle={{ alignItems: "center" }}
-            //onEndReached={paginationHandler}
+            onEndReached={paginationHandler}
             renderItem={(item) => <Card>{item}</Card>}
             keyExtractor={(item) => item.id}
           />
         </View>,
       ]);
-
-      setRelated([
-        {
-          id: topicData.pageid,
-          title: topicData.title,
-          summary: topicData.extract,
-        },
-        ...formattedData,
-      ]);
     }
-  };
+  }, [cardsData]);
 
-  const onSwipe = async (event) => {
-    setPageNumber(event.nativeEvent.position);
-
-    await populateCards(related[pageNumber]?.title, event.nativeEvent.position);
-  };
   useAsyncEffect(async () => {
-    await populateCards();
-  }, []);
+    show(related[1]?.title);
+    await populateCards(related[1]?.title, 1);
+  }, [related]);
 
   /*
   useAsyncEffect(async () => {
@@ -314,6 +367,7 @@ export default function Shallow() {
       style={css.swipeableView}
       initialPage={0}
       onPageSelected={onSwipe}
+      overdrag={true}
     >
       {swipeableView}
     </PagerView>
