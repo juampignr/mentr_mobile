@@ -37,7 +37,6 @@ export default function Layout() {
       value={{
         chain: chain,
         setChain: setChain,
-        //wiki: wiki,
         status: status,
         setStatus: setStatus,
         search: search,
