@@ -96,35 +96,36 @@ class RNWiki {
 
     for (let i = 0, n = response.length; i < n; i++) {
       let part = response[i];
-      let lastPart = i ? response[i - 1].trim() : "";
+      let lastPart = i ? response[i - 2] : "";
 
-      if (/^\s{1,2}[a-zA-Z]*.*$/g.test(part)) {
+      if (/^\s{1,2}.{3,100}$/g.test(part)) {
         if (lastPartType === "content") {
-          parsedResponse.push(
-            `<${part.replace(/^\s{1,2}/g, "").replace(/\s{1,2}$/g, "")}>`,
-          );
+          parsedResponse.push(`<${part.trim()}>`);
+          lastPartType = "section";
         } else {
-          //parsedResponse.pop();
-          parsedResponse.push(
-            `<${lastPart}>:<${part.replace(/^\s{1,2}/g, "").replace(/\s{1,2}$/g, "")}>`,
-          );
-        }
+          parsedResponse.pop();
 
-        lastPartType = "section";
+          parsedResponse.push(`<${lastPart.trim()}>:<${part.trim()}>`);
+
+          lastPartType = "section";
+        }
       } else if (!/^\s*$/g.test(part)) {
+        parsedResponse.push(part);
+        lastPartType = "content";
+        /*
         if (i && !excludedSections.include(lastPart.trim())) {
           parsedResponse.push(part.trim());
           lastPartType = "content";
         } else {
           parsedResponse.pop();
         }
+        */
       }
     }
 
-    for (const r of parsedResponse) {
-      console.log(r);
-    }
+    //console.log(parsedResponse);
 
+    show(parsedResponse);
     return response;
   }
 }
