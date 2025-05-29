@@ -1,4 +1,4 @@
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, StyleSheet } from "react-native";
 import { createContext, useEffect, useState, useRef } from "react";
 import {
   useFonts,
@@ -13,6 +13,8 @@ import SearchBar from "../components/SearchBar";
 export const Context = createContext();
 
 export default function Layout() {
+  const styles = StyleSheet.create({ ...css });
+
   let [fontsLoaded] = useFonts({
     Corben_400Regular,
     Corben_700Bold,
@@ -41,6 +43,7 @@ export default function Layout() {
         setStatus: setStatus,
         search: search,
         setSearch: setSearch,
+        styles: styles,
       }}
     >
       <View style={css.body}>
