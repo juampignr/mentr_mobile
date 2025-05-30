@@ -1,32 +1,68 @@
 export default class RNWiki {
-  constructor(fetch = fetch) {
+  constructor() {
     this.fetch = fetch;
   }
 
   async getPage(query) {
-    const sectionsURL = `https://en.wikipedia.org/w/api.php?action=parse&format=json&page=${encodeURIComponent(query)}&prop=sections&origin=*`;
-
-    let sections = await (await fetch(sectionsURL)).json();
-
-    const excludedTitles = [
+    const excludedSections = [
       "See also",
       "External links",
       "References",
       "Further reading",
       "Explanatory notes",
     ];
+    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&titles=${encodeURIComponent(query)}&prop=extracts&explaintext`;
+    let response = await (await fetch(url)).json();
 
-    sections = sections.filter(
-      (section) => !excludedTitles.includes(section.line),
-    );
+    response = Object.values(response.query.pages)[0];
+    response = response.extract;
+    //show(response);
 
-    const sectionsIndex = sections.map((section) => section.index);
+    response = response.split(/[=]{1,2}\s*[a-zA-Z]*\s*[=]{1,2}/gm);
 
-    console.log(sectionsIndex);
+    let lastPartType = "content";
+    let lastPartContent = "start";
 
-    const pageURL = `https://en.wikipedia.org/w/api.php?action=parse&format=json&page=${encodeURIComponent(query)}&prop=text&section=${sectionsIndex[0]}&origin=*`;
-    const pageResponse = await (await fetch(pageURL)).json();
-    console.log(pageResponse);
-    return pageResponse;
+    let parsedResponse = [];
+
+    for (let i = 0, n = response.length; i < n; i++) {
+      let part = response[i];
+      let lastSection = i ? response[i - 2] : "";
+      let lastPart = i ? response[i - 1] : "";
+
+      if (/^\=.*$/gm.test(part)) {
+        i++;
+        part = response[i];
+        lastSection = i ? response[i - 2] : "";
+      }
+
+      if (/^\s{1,2}.{3,100}$/g.test(part)) {
+        if (lastPartType === "content") {
+          parsedResponse.push(`<${part.trim()}>`);
+          lastPartType = "section";
+        } else {
+          parsedResponse.pop();
+
+          parsedResponse.push(`<${lastSection.trim()}>:<${part.trim()}>`);
+
+          lastPartType = "section";
+        }
+      } else if (!/^\s*$/g.test(part)) {
+        if (
+          lastPartType === "section" &&
+          excludedSections.includes(lastPart.trim())
+        ) {
+          parsedResponse.pop();
+        } else {
+          parsedResponse.push(part.replace(/\n/g, "\n\n").trimEnd());
+        }
+
+        lastPartType = "content";
+      }
+    }
+
+    //console.log(parsedResponse);
+
+    return parsedResponse;
   }
 }

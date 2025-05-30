@@ -8,7 +8,7 @@ export default css = {
   searchBar: {
     width: "95%",
     height: 60,
-    backgroundColor: "#ffffffaa",
+    backgroundColor: "#ffffffff",
     borderRadius: 15,
     borderWidth: 3,
     borderColor: "#242424",
@@ -104,12 +104,10 @@ export default css = {
     marginTop: "10%",
   },
   contentView: {
-    flex: 1,
+    padding: 12,
+    paddingBottom: 60,
     marginTop: "12%",
-    padding: 10,
-    flexDirection: "column",
-    alignItems: "left",
-    justifyContent: "flex-start",
+    maxHeight: "90%",
   },
   contentTitle: {
     fontFamily: "Corben_400Regular",
@@ -118,11 +116,8 @@ export default css = {
     textAlign: "left",
     color: "#b147ff99",
   },
+
   section: {
-    //flexDirection: "row",
-    //justifyContent: "space-between",
-    //alignItems: "flex-start",
-    //marginTop: ,
     alignSelf: "left",
     flexDirection: "row",
     justifyContent: "space-between",
@@ -136,5 +131,18 @@ export default css = {
     color: "#4d769f",
     lineHeight: 30,
   },
-  sectionIcon: { color: "#b147ff99", flex: 1, margin: "auto" },
+  contentSummary: {
+    marginTop: 5,
+    fontFamily: "Corben_400Regular",
+    fontSize: 16,
+    lineHeight: 20,
+    textAlign: "left",
+    color: "#4d769f",
+  },
+  sectionIcon: {
+    color: "#b147ff99",
+    flex: 2,
+    margin: "auto",
+    textAlign: "right",
+  },
 };
