@@ -77,7 +77,7 @@ export default function Medium() {
 
   useAsyncEffect(async () => {
     const wiki = new RNWiki();
-    const isSectionRegex = /^<.{3,100}>$/g;
+    const isSectionRegex = /\<.*\>/g;
 
     const result = await wiki.getPage(topic);
 
@@ -85,23 +85,25 @@ export default function Medium() {
 
     for (let i = 0, n = result.length; i < n; i++) {
       const part = result[i];
-
       //Best effort to discover the section's content
-      const nextPart = i + 1 < n ? result[i + 1] : "";
-      const twoPartsMore = i + 2 < n ? result[i + 2] : "";
 
       const isSection = isSectionRegex.test(part);
-      const isNextSection = isSectionRegex.test(nextPart);
+      const nextPart = result[i + 1] ?? "";
 
       if (isSection) {
+        const title = part.replace(/[<>]/g, "");
+        const subtitle = title.split(":").length > 1 ? title.split(":")[1] : "";
+        const content = nextPart;
+
+        const sectionObject = {
+          title: title,
+          subtitle: subtitle,
+          content: content,
+        };
+
         setSections((prevSections) => [
           ...prevSections,
-          <Section>
-            {{
-              title: part.replace(/[<>]/g, ""),
-              content: !isNextSection ? nextPart : twoPartsMore,
-            }}
-          </Section>,
+          <Section>{sectionObject}</Section>,
         ]);
       }
     }

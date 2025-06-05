@@ -1,10 +1,6 @@
 import { View, ScrollView, StyleSheet } from "react-native";
 import { createContext, useEffect, useState, useRef } from "react";
-import {
-  useFonts,
-  Corben_400Regular,
-  Corben_700Bold,
-} from "@expo-google-fonts/corben";
+import { useFonts, Corben_400Regular } from "@expo-google-fonts/corben";
 import { Slot } from "expo-router";
 //import wiki from "wikipedia"
 import css from "../styles/global.js";
@@ -17,7 +13,6 @@ export default function Layout() {
 
   let [fontsLoaded] = useFonts({
     Corben_400Regular,
-    Corben_700Bold,
   });
 
   const [chain, setChain] = useState(false);

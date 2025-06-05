@@ -1,3 +1,5 @@
+import { FA5Style } from "@expo/vector-icons/build/FontAwesome5";
+
 export default css = {
   searchBarInput: {
     fontFamily: "Corben_400Regular",
@@ -144,5 +146,28 @@ export default css = {
     flex: 2,
     margin: "auto",
     textAlign: "right",
+  },
+  visible: {
+    display: "flex",
+  },
+  invisible: {
+    display: "none",
+  },
+  sectionContent: {
+    marginTop: 10,
+    fontFamily: "Corben_400Regular",
+    fontSize: 15,
+    lineHeight: 20,
+    textAlign: "left",
+    color: "#334f6a",
+  },
+  sectionSubtitle: {
+    marginTop: 10,
+
+    fontFamily: "Corben_400Regular",
+    fontSize: 18,
+    textAlign: "left",
+    color: "#334f6a",
+    lineHeight: 30,
   },
 };
