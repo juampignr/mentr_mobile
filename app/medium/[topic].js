@@ -1,5 +1,13 @@
-import { useContext, useState, useRef, useEffect, useMemo } from "react";
+import {
+  useContext,
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import { ScrollView, View, Text, StyleSheet } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useAsyncEffect } from "@react-hook/async";
 import { Context } from "../_layout.js";
 import { useLocalSearchParams } from "expo-router";
@@ -74,6 +82,27 @@ export default function Medium() {
 
   const [sections, setSections] = useState([]);
   const [summary, setSummary] = useState("");
+
+  const startTimeRef = useRef(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Screen is focused
+      startTimeRef.current = Date.now();
+
+      return () => {
+        const endTime = Date.now();
+        const timeSpent = endTime - startTimeRef.current;
+
+        ctx.setChain((prevChain) => ({
+          ...prevChain,
+          [topic]: prevChain[topic] ? prevChain[topic] + timeSpent : timeSpent,
+        }));
+
+        console.log(ctx.chain);
+      };
+    }, []),
+  );
 
   useAsyncEffect(async () => {
     const wiki = new RNWiki();

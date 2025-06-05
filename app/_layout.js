@@ -15,7 +15,7 @@ export default function Layout() {
     Corben_400Regular,
   });
 
-  const [chain, setChain] = useState(false);
+  const [chain, setChain] = useState({});
   const [status, setStatus] = useState(JSON.stringify({ action: "loading" }));
   const [search, setSearch] = useState("");
   const timeoutId = useRef(0);
