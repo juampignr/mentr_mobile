@@ -9,6 +9,8 @@ import PillsView from "../../components/PillsView";
 import Pill from "../../components/Pill";
 import PagerView from "react-native-pager-view";
 import chalk from "chalk";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import Spinner from "../../components/Spinner";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -78,6 +80,7 @@ export default function Shallow() {
 
   const [pageNumber, setPageNumber] = useState(-1);
   const [related, setRelated] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [swipeableView, setSwipeableView] = useState([]);
 
   const { topic } = useLocalSearchParams();
@@ -119,7 +122,7 @@ export default function Shallow() {
 
     pages = pages.filter((page) => page.extract);
 
-    const formattedData = pages.map((page) => ({
+    let formattedData = pages.map((page) => ({
       id: page.pageid.toString(),
       title: page.title,
       summary: page.extract,
@@ -164,44 +167,71 @@ export default function Shallow() {
   };
 
   useAsyncEffect(async () => {
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
-    const response = await fetch(url);
+    if (topic) {
+      const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(topic)}&format=json&origin=*`;
+      const topicResponse = await fetch(topicURL);
 
-    const data = await response.json();
+      let topicData = await topicResponse.json();
+      topicData = Object.values(topicData.query.pages)[0];
 
-    let pages = Object.values(data.query.pages).filter((page) => page.extract);
+      const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+      const response = await fetch(url);
 
-    pages = pages.filter((page) => page.extract);
+      setIsLoading(false);
 
-    let formattedData = pages.map((page) => ({
-      id: page.pageid.toString(),
-      title: page.title,
-      summary: page.extract,
-    }));
+      const data = await response.json();
 
-    setSwipeableView([
-      <View>
-        <FlatList
-          data={formattedData}
-          contentContainerStyle={{ alignItems: "center" }}
-          onEndReached={paginationHandler}
-          renderItem={(item) => <Card>{item}</Card>}
-          keyExtractor={(item) => item.id}
-        />
-      </View>,
-    ]);
+      let pages = Object.values(data.query.pages).filter(
+        (page) => page.extract,
+      );
 
-    setRelated(formattedData);
+      pages = pages.filter((page) => page.extract);
+
+      let formattedData = pages.map((page) => ({
+        id: page.pageid.toString(),
+        title: page.title,
+        summary: page.extract,
+      }));
+
+      let allData = [
+        {
+          id: topicData.pageid.toString(),
+          title: topicData.title,
+          summary: topicData.extract,
+        },
+        ...formattedData,
+      ];
+
+      setSwipeableView([
+        <View>
+          <FlatList
+            data={allData}
+            contentContainerStyle={{ alignItems: "center" }}
+            onEndReached={paginationHandler}
+            renderItem={(item) => <Card>{item}</Card>}
+            keyExtractor={(item) => item.id}
+          />
+        </View>,
+      ]);
+
+      setRelated(allData);
+    }
   }, []);
 
   return (
-    <PagerView
-      style={css.swipeableView}
-      initialPage={0}
-      onPageSelected={onSwipe}
-      overdrag={true}
-    >
-      {swipeableView}
-    </PagerView>
+    (isLoading && <Spinner />) || (
+      <PagerView
+        style={css.swipeableView}
+        initialPage={0}
+        onPageSelected={onSwipe}
+        overdrag={true}
+      >
+        {swipeableView.map((view, index) => (
+          <View key={index} nativeID={`page-${index}`}>
+            {view}
+          </View>
+        ))}
+      </PagerView>
+    )
   );
 }

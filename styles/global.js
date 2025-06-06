@@ -170,4 +170,12 @@ export default css = {
     color: "#334f6a",
     lineHeight: 30,
   },
+  spinnerLoading: {
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+  },
+  spinnerLoaded: {
+    display: "none",
+  },
 };

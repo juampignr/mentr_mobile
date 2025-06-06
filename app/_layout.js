@@ -5,6 +5,7 @@ import { Slot } from "expo-router";
 //import wiki from "wikipedia"
 import css from "../styles/global.js";
 import SearchBar from "../components/SearchBar";
+import * as SQLite from "expo-sqlite";
 
 export const Context = createContext();
 
@@ -32,6 +33,7 @@ export default function Layout() {
   return (
     <Context.Provider
       value={{
+        db: SQLite.openDatabaseSync("mentr"),
         chain: chain,
         setChain: setChain,
         status: status,

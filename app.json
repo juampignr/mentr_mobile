@@ -1,5 +1,5 @@
 {
- "expo": {
+  "expo": {
     "name": "mentr",
     "slug": "mentr",
     "version": "1.0.0",
@@ -30,7 +30,8 @@
     },
     "plugins": [
       "expo-font",
-      "expo-router"
+      "expo-router",
+      "expo-sqlite"
     ]
   }
 }

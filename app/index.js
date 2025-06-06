@@ -114,7 +114,10 @@ export default function Curiosity() {
   }, [ctx.status]);
 
   useAsyncEffect(async () => {
-    if (!ctx?.chain) {
+    show(ctx.db);
+    const interestChain = Object.entries(ctx?.chain);
+
+    if (!interestChain.length) {
       let selectedSuggestions = [
         "Photography",
         "Environmental science",
@@ -165,6 +168,18 @@ export default function Curiosity() {
 
       show(selectedSuggestions);
       setTopics(shuffledPills);
+    } else {
+      const sortedInterests = Object.keys(ctx.chain).sort(function (a, b) {
+        return ctx.chain[a] > ctx.chain[b];
+      });
+      console.log(sortedInterests);
+
+      const sortedPills = [];
+
+      for (const item of sortedInterests) {
+        sortedPills.push(<Pill>{item}</Pill>);
+      }
+      setTopics(sortedPills);
     }
   }, []);
 
