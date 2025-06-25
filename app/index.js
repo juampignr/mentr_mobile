@@ -114,10 +114,22 @@ export default function Curiosity() {
   }, [ctx.status]);
 
   useAsyncEffect(async () => {
-    show(ctx.db);
+    const orderedInterests = await ctx.db.getAllAsync(
+      `SELECT chain, SUM(spent) AS totalSpent
+      FROM
+        interest
+      WHERE
+        disciple_email = 'juampi.gnr@gmail.com'
+      GROUP BY
+        chain
+      ORDER BY
+        totalSpent DESC;
+      `,
+    );
+
     const interestChain = Object.entries(ctx?.chain);
 
-    if (!interestChain.length) {
+    if (!orderedInterests?.length) {
       let selectedSuggestions = [
         "Photography",
         "Environmental science",
@@ -169,17 +181,10 @@ export default function Curiosity() {
       show(selectedSuggestions);
       setTopics(shuffledPills);
     } else {
-      const sortedInterests = Object.keys(ctx.chain).sort(function (a, b) {
-        return ctx.chain[a] > ctx.chain[b];
-      });
-      console.log(sortedInterests);
-
-      const sortedPills = [];
-
-      for (const item of sortedInterests) {
-        sortedPills.push(<Pill>{item}</Pill>);
-      }
-      setTopics(sortedPills);
+      const orderedTopics = orderedInterests.map((element) => (
+        <Pill>{element?.chain}</Pill>
+      ));
+      setTopics(orderedTopics);
     }
   }, []);
 

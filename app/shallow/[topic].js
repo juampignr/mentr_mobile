@@ -81,6 +81,7 @@ export default function Shallow() {
 
   const [related, setRelated] = useState([]);
   const [cardsData, setCardsData] = useState([]);
+  const [cardsMatrix, setCardsMatrix] = useState({});
 
   const [pageNumber, setPageNumber] = useState(-1);
   const [isLoading, setIsLoading] = useState(true);
@@ -144,8 +145,26 @@ export default function Shallow() {
         },
         ...formattedData,
       ]);
+      setCardsMatrix(
+        (oldMatrix) =>
+          (oldMatrix = {
+            ...oldMatrix,
+            [pageNumber]: [
+              {
+                id: topicData.pageid,
+                title: topicData.title,
+                summary: topicData.extract,
+              },
+              ...formattedData,
+            ],
+          }),
+      );
     } else {
       setCardsData(formattedData);
+      setCardsMatrix(
+        (oldMatrix) =>
+          (oldMatrix = { ...oldMatrix, [pageNumber]: formattedData }),
+      );
     }
   };
 
@@ -159,7 +178,14 @@ export default function Shallow() {
   };
 
   const paginationHandler = (event) => {
-    //show(event);
+    show(event);
+    setCardsMatrix((oldMatrix) => ({
+      [pageNumber - 1]: {
+        title: "This is the end",
+        summary: "My lonely friend, the end",
+        pageid: "999999",
+      },
+    }));
   };
 
   useAsyncEffect(async () => {
@@ -211,6 +237,7 @@ export default function Shallow() {
     ]);
   }, []);
 
+  /*
   useAsyncEffect(async () => {
     setSwipeableView([
       ...swipeableView,
@@ -225,6 +252,26 @@ export default function Shallow() {
       </View>,
     ]);
   }, [cardsData]);
+  */
+
+  useAsyncEffect(async () => {
+    show(Object.keys(cardsMatrix));
+    show(pageNumber);
+
+    // Instead of appending, I need to update the existing array
+    setSwipeableView([
+      ...swipeableView,
+      <View>
+        <FlatList
+          data={cardsMatrix[pageNumber - 1]}
+          contentContainerStyle={{ alignItems: "center" }}
+          onEndReached={paginationHandler}
+          renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
+          keyExtractor={(item) => item.id}
+        />
+      </View>,
+    ]);
+  }, [cardsMatrix]);
 
   return (
     (isLoading && <Spinner />) || (

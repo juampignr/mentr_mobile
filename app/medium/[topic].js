@@ -130,24 +130,14 @@ export default function Medium() {
         );
         */
 
-        show(allInterests);
-
         if (selectResult) {
-          show("Topic already exists");
-
           const insertResult = ctx.db.runSync(
             `UPDATE interest SET spent = spent + ${timeSpent} WHERE id = '${selectResult.id}'`,
           );
-
-          show(insertResult);
         } else {
-          show("Creating topic...");
-
           const insertResult = ctx.db.runSync(
             `INSERT OR IGNORE INTO interest (id,disciple_email,name,spent,chain) VALUES ('${randomUUID()}', 'juampi.gnr@gmail.com', '${topic}', ${timeSpent}, '${firstTopic}')`,
           );
-
-          show(insertResult);
         }
       };
     }, []),
