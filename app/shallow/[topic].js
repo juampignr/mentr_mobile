@@ -204,7 +204,7 @@ export default function Shallow() {
           data={allData}
           contentContainerStyle={{ alignItems: "center" }}
           onEndReached={paginationHandler}
-          renderItem={(item) => <Card>{item}</Card>}
+          renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
           keyExtractor={(item) => item.id}
         />
       </View>,
@@ -219,7 +219,7 @@ export default function Shallow() {
           data={cardsData}
           contentContainerStyle={{ alignItems: "center" }}
           onEndReached={paginationHandler}
-          renderItem={(item) => <Card>{item}</Card>}
+          renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
           keyExtractor={(item) => item.id}
         />
       </View>,

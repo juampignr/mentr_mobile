@@ -28,7 +28,8 @@
     "react-native-screens": "~4.11.1",
     "@expo/vector-icons": "^14.1.0",
     "react-native-reanimated": "~3.17.4",
-    "expo-sqlite": "~15.2.12"
+    "expo-sqlite": "~15.2.12",
+    "expo-crypto": "~14.1.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

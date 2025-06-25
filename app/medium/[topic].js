@@ -11,10 +11,12 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useAsyncEffect } from "@react-hook/async";
 import { Context } from "../_layout.js";
 import { useLocalSearchParams } from "expo-router";
+import { randomUUID } from "expo-crypto";
 import css from "../../styles/global.js";
 import chalk from "chalk";
 import Section from "../../components/Section.js";
 import RNWiki from "../../libraries/RNWiki.mjs";
+import { all } from "axios";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -78,7 +80,13 @@ let warn = (arg) => {
 
 export default function Medium() {
   const ctx = useContext(Context);
-  const { topic } = useLocalSearchParams();
+  let { topic } = useLocalSearchParams();
+  let chain = topic.split(":");
+
+  firstTopic = chain[0];
+  lastTopic = chain[1];
+
+  topic = lastTopic;
 
   const [sections, setSections] = useState([]);
   const [summary, setSummary] = useState("");
@@ -99,7 +107,48 @@ export default function Medium() {
           [topic]: prevChain[topic] ? prevChain[topic] + timeSpent : timeSpent,
         }));
 
-        console.log(ctx.chain);
+        const selectResult = ctx.db.getFirstSync(
+          `SELECT * FROM interest WHERE disciple_email = 'juampi.gnr@gmail.com' AND name = '${topic}'`,
+        );
+
+        /* Query on shallow
+        const allInterests = ctx.db.getAllSync(
+          `SELECT
+            disciple.email AS disciple,
+            interest.name AS topic,
+            interest.spent AS spent,
+            interest.chain AS firstTopic
+          FROM
+            disciple
+          INNER JOIN
+            interest
+          ON
+            disciple.email = interest.disciple_email
+          WHERE
+            interest.chain = '${topic}'
+          ORDER BY interest.spent DESC;`,
+        );
+        */
+
+        show(allInterests);
+
+        if (selectResult) {
+          show("Topic already exists");
+
+          const insertResult = ctx.db.runSync(
+            `UPDATE interest SET spent = spent + ${timeSpent} WHERE id = '${selectResult.id}'`,
+          );
+
+          show(insertResult);
+        } else {
+          show("Creating topic...");
+
+          const insertResult = ctx.db.runSync(
+            `INSERT OR IGNORE INTO interest (id,disciple_email,name,spent,chain) VALUES ('${randomUUID()}', 'juampi.gnr@gmail.com', '${topic}', ${timeSpent}, '${firstTopic}')`,
+          );
+
+          show(insertResult);
+        }
       };
     }, []),
   );

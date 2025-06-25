@@ -28,6 +28,9 @@ export default function Layout() {
   useAsyncEffect(async () => {
     db.current = await SQLite.openDatabaseAsync("mentr.db");
 
+    //await db.current.execAsync(`DROP TABLE IF EXISTS interest`);
+    //await db.current.execAsync(`DROP TABLE IF EXISTS disciple`);
+
     await db.current.execAsync(
       `
       PRAGMA journal_mode = WAL;
@@ -41,21 +44,19 @@ export default function Layout() {
 
       CREATE TABLE IF NOT EXISTS interest (
         id VARCHAR(64) PRIMARY KEY,
-        disciple_id VARCHAR(32) NOT NULL,
+        disciple_email VARCHAR(100) NOT NULL,
         name VARCHAR(64) NOT NULL,
         spent INT NOT NULL DEFAULT 0,
         chain VARCHAR(64) NOT NULL,
-        FOREIGN KEY (disciple_id) REFERENCES disciple(id)
+        FOREIGN KEY (disciple_email) REFERENCES disciple(email)
       );
     `,
     );
 
     const insertRes = await db.current.runAsync(
-      "INSERT INTO disciple values ('juampi.gnr@gmail.com','Juan Pablo Behler','pbkdf2_sha256$100000$');",
+      "INSERT OR IGNORE INTO disciple values ('juampi.gnr@gmail.com','Juan Pablo Behler','pbkdf2_sha256$100000$');",
     );
-    console.log(insertRes.lastInsertRowId, insertRes.changes);
     const firstRow = await db.current.getFirstAsync("SELECT * FROM disciple");
-    console.log(firstRow);
 
     return () => {
       if (db.current) {
