@@ -11,6 +11,7 @@ import PagerView from "react-native-pager-view";
 import chalk from "chalk";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Spinner from "../../components/Spinner";
+import { all } from "axios";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -171,6 +172,7 @@ export default function Shallow() {
   const onSwipe = async (event) => {
     let viewPosition = event.nativeEvent.position;
 
+    show(`On position ${viewPosition}`);
     //if (viewPosition === 0 && firstLoad.current === false) viewPosition = 1;
     //firstLoad.current = false;
 
@@ -221,8 +223,38 @@ export default function Shallow() {
       ...formattedData,
     ];
 
+    const allInterests = await ctx.db.getAllAsync(
+      `SELECT name
+      FROM
+        interest
+      WHERE
+        chain = '${encodeURIComponent(topic)}'
+      ORDER BY spent DESC
+      `,
+    );
+
+    for (const interest of allInterests.reverse()) {
+      const interestURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
+      const response = await fetch(interestURL);
+
+      let interestData = await response?.json();
+      interestData = Object.values(interestData.query.pages)[0];
+
+      allData = [
+        {
+          id: interestData.pageid.toString(),
+          title: interestData.title,
+          summary: interestData.extract,
+        },
+        ...allData,
+      ];
+    }
+
     setRelated(allData);
 
+    setPageNumber(0);
+    setCardsMatrix((oldMatrix) => (oldMatrix = { [pageNumber]: allData }));
+    /*
     setSwipeableView([
       ...swipeableView,
       <View>
@@ -235,6 +267,7 @@ export default function Shallow() {
         />
       </View>,
     ]);
+    */
   }, []);
 
   /*
@@ -255,9 +288,7 @@ export default function Shallow() {
   */
 
   useAsyncEffect(async () => {
-    show(Object.keys(cardsMatrix));
-    show(pageNumber);
-
+    show(cardsMatrix[pageNumber - 1]);
     // Instead of appending, I need to update the existing array
     setSwipeableView([
       ...swipeableView,

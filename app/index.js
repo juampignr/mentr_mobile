@@ -69,15 +69,12 @@ let warn = (arg) => {
 export default function Curiosity() {
   const ctx = useContext(Context);
 
-  show(ctx.chain);
   const [topics, setTopics] = useState([]);
   const randomIndex = (categories) => {
     return Math.floor(Math.random() * categories.length);
   };
 
   useAsyncEffect(async () => {
-    console.log(`Alerted from PillsView index:`);
-    console.log(ctx.status);
     let queryResult = [];
     let searchSuggestions = [];
 
@@ -87,7 +84,7 @@ export default function Curiosity() {
           `https://en.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
         );
         const data = await response.json();
-        show(data);
+
         queryResult = data[1]; // The second element contains the list of suggestions
 
         if (queryResult.length <= 10) {
@@ -106,10 +103,8 @@ export default function Curiosity() {
       for (const topic of queryResult) {
         searchSuggestions.push(<Pill>{topic}</Pill>);
       }
-      show(searchSuggestions);
 
       setTopics(searchSuggestions);
-      show(searchSuggestions);
     }
   }, [ctx.status]);
 
@@ -178,7 +173,6 @@ export default function Curiosity() {
         shuffledPills.push(<Pill>{suggestion}</Pill>);
       }
 
-      show(selectedSuggestions);
       setTopics(shuffledPills);
     } else {
       const orderedTopics = orderedInterests.map((element) => (

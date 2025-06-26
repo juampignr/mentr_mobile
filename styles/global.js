@@ -14,8 +14,6 @@ export default css = {
     borderRadius: 15,
     borderWidth: 3,
     borderColor: "#242424",
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
     zIndex: 999,
     padding: 0,
     margin: "auto",
