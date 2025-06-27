@@ -116,13 +116,14 @@ export default function Shallow() {
     }
 
     setPageNumber(pageno);
-    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(related[pageno + 1]?.title)}&format=json&origin=*`;
+
+    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(related[pageno]?.title)}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL);
 
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(related[pageno + 1]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(related[pageno]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url);
 
     const data = await response.json();
@@ -172,22 +173,13 @@ export default function Shallow() {
   const onSwipe = async (event) => {
     let viewPosition = event.nativeEvent.position;
 
-    show(`On position ${viewPosition}`);
+    await populateCards(viewPosition);
     //if (viewPosition === 0 && firstLoad.current === false) viewPosition = 1;
     //firstLoad.current = false;
-
-    await populateCards(viewPosition);
   };
 
   const paginationHandler = (event) => {
     show(event);
-    setCardsMatrix((oldMatrix) => ({
-      [pageNumber - 1]: {
-        title: "This is the end",
-        summary: "My lonely friend, the end",
-        pageid: "999999",
-      },
-    }));
   };
 
   useAsyncEffect(async () => {
@@ -250,24 +242,9 @@ export default function Shallow() {
       ];
     }
 
-    setRelated(allData);
-
     setPageNumber(0);
-    setCardsMatrix((oldMatrix) => (oldMatrix = { [pageNumber]: allData }));
-    /*
-    setSwipeableView([
-      ...swipeableView,
-      <View>
-        <FlatList
-          data={allData}
-          contentContainerStyle={{ alignItems: "center" }}
-          onEndReached={paginationHandler}
-          renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
-          keyExtractor={(item) => item.id}
-        />
-      </View>,
-    ]);
-    */
+    setRelated(allData);
+    setCardsMatrix({ 0: allData });
   }, []);
 
   /*
@@ -288,13 +265,10 @@ export default function Shallow() {
   */
 
   useAsyncEffect(async () => {
-    show(cardsMatrix[pageNumber - 1]);
-    // Instead of appending, I need to update the existing array
     setSwipeableView([
-      ...swipeableView,
       <View>
         <FlatList
-          data={cardsMatrix[pageNumber - 1]}
+          data={cardsMatrix["0"]}
           contentContainerStyle={{ alignItems: "center" }}
           onEndReached={paginationHandler}
           renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
@@ -302,6 +276,8 @@ export default function Shallow() {
         />
       </View>,
     ]);
+
+    //if (pageNumber === -1) await onSwipe({ nativeEvent: { position: 0 } });
   }, [cardsMatrix]);
 
   return (

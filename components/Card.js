@@ -9,7 +9,6 @@ export default function Card({ children, firstTopic }) {
   const ctx = useContext(Context);
 
   const [topic, setTopic] = useState(children?.item);
-
   return (
     <View style={css.card}>
       <Link
