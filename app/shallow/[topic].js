@@ -79,6 +79,7 @@ export default function Shallow() {
   const timeoutId = useRef(0);
   const pageLimit = useRef(10);
   const firstLoad = useRef(true);
+  const currentPosition = useRef(0);
 
   const [related, setRelated] = useState([]);
   const [cardsData, setCardsData] = useState([]);
@@ -87,6 +88,7 @@ export default function Shallow() {
   const [pageNumber, setPageNumber] = useState(-1);
   const [isLoading, setIsLoading] = useState(true);
   const [swipeableView, setSwipeableView] = useState([]);
+  const [paginated, setPaginated] = useState(false);
 
   const { topic } = useLocalSearchParams();
 
@@ -110,20 +112,58 @@ export default function Shallow() {
   };
 
   const populateCards = async (pageno) => {
-    if (pageno < pageNumber) {
-      show("Going backwards, doing nothing");
+    let scopedRelated = [];
+
+    /*
+    if (swipeableView[pageno]) {
+      show("Page already set");
       return;
+    }
+    */
+
+    /*
+    if (pageno === 0 && related.length) {
+      pageno = 1;
+    }
+    */
+
+    if (pageno < pageNumber) {
+      show("Going backwards");
+      return;
+    }
+    if (!related.length) {
+      const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+      const response = await fetch(url);
+
+      const data = await response.json();
+
+      let pages = Object.values(data.query.pages).filter(
+        (page) => page.extract,
+      );
+
+      pages = pages.filter((page) => page.extract);
+
+      let formattedData = pages.map((page) => ({
+        id: page.pageid.toString(),
+        title: page.title,
+        summary: page.extract,
+      }));
+
+      scopedRelated = formattedData;
+      setRelated(formattedData);
+    } else {
+      scopedRelated = related;
     }
 
     setPageNumber(pageno);
 
-    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(related[pageno]?.title)}&format=json&origin=*`;
+    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno]?.title}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL);
 
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(related[pageno]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url);
 
     const data = await response.json();
@@ -138,20 +178,12 @@ export default function Shallow() {
       summary: page.extract,
     }));
 
-    if (formattedData[0]?.title !== related[pageno]?.title) {
-      setCardsData([
-        {
-          id: topicData.pageid,
-          title: topicData.title,
-          summary: topicData.extract,
-        },
-        ...formattedData,
-      ]);
+    if (formattedData[0]?.title !== scopedRelated[pageno]?.title) {
       setCardsMatrix(
         (oldMatrix) =>
           (oldMatrix = {
             ...oldMatrix,
-            [pageNumber]: [
+            [pageno]: [
               {
                 id: topicData.pageid,
                 title: topicData.title,
@@ -162,10 +194,8 @@ export default function Shallow() {
           }),
       );
     } else {
-      setCardsData(formattedData);
       setCardsMatrix(
-        (oldMatrix) =>
-          (oldMatrix = { ...oldMatrix, [pageNumber]: formattedData }),
+        (oldMatrix) => (oldMatrix = { ...oldMatrix, [pageno]: formattedData }),
       );
     }
   };
@@ -173,13 +203,28 @@ export default function Shallow() {
   const onSwipe = async (event) => {
     let viewPosition = event.nativeEvent.position;
 
+    currentPosition.current = viewPosition;
+    //setHasSwiped(viewPosition);
+
+    show(`On swipe at currentPosition.current: ${currentPosition.current}`);
+    show(`Related articles count: ${related.length}`);
     await populateCards(viewPosition);
     //if (viewPosition === 0 && firstLoad.current === false) viewPosition = 1;
     //firstLoad.current = false;
   };
 
   const paginationHandler = (event) => {
-    show(event);
+    show(`End reached on ${currentPosition.current}`);
+    setPaginated(true);
+    /*
+    setCardsMatrix(
+      (oldMatrix) =>
+        (oldMatrix["" + currentPosition.current] = [
+          ...oldMatrix["" + currentPosition.current],
+          { id: 999, title: "Loading...", summary: "Loading..." },
+        ]),
+    );
+    */
   };
 
   useAsyncEffect(async () => {
@@ -204,6 +249,7 @@ export default function Shallow() {
       summary: page.extract,
     }));
 
+    setRelated(formattedData);
     setIsLoading(false);
 
     let allData = [
@@ -243,42 +289,62 @@ export default function Shallow() {
     }
 
     setPageNumber(0);
-    setRelated(allData);
     setCardsMatrix({ 0: allData });
+    setRelated(allData);
   }, []);
 
-  /*
   useAsyncEffect(async () => {
-    setSwipeableView([
-      ...swipeableView,
-      <View>
-        <FlatList
-          data={cardsData}
-          contentContainerStyle={{ alignItems: "center" }}
-          onEndReached={paginationHandler}
-          renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
-          keyExtractor={(item) => item.id}
-        />
-      </View>,
-    ]);
-  }, [cardsData]);
-  */
-
-  useAsyncEffect(async () => {
-    setSwipeableView([
-      <View>
-        <FlatList
-          data={cardsMatrix["0"]}
-          contentContainerStyle={{ alignItems: "center" }}
-          onEndReached={paginationHandler}
-          renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
-          keyExtractor={(item) => item.id}
-        />
-      </View>,
-    ]);
-
-    //if (pageNumber === -1) await onSwipe({ nativeEvent: { position: 0 } });
+    for (const index in cardsMatrix) {
+      setSwipeableView([
+        ...swipeableView,
+        <View>
+          <FlatList
+            data={cardsMatrix[index]}
+            contentContainerStyle={{ alignItems: "center" }}
+            onEndReached={paginationHandler}
+            renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
+            keyExtractor={(item) => item.id}
+          />
+        </View>,
+      ]);
+    }
   }, [cardsMatrix]);
+
+  useAsyncEffect(async () => {
+    if (paginated) {
+      const updatedCards = cardsMatrix["" + currentPosition.current];
+      const updatedSwipeableView = [...swipeableView];
+
+      show(updatedCards[0]?.title);
+      const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=400&grsoffset=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+      const response = await fetch(url);
+
+      const data = await response.json();
+
+      show(Object.values(data.query.pages));
+      updatedCards.push({
+        id: "999",
+        title: "New Title",
+        summary: "New Summary",
+      });
+
+      updatedSwipeableView[currentPosition.current] = (
+        <View>
+          <FlatList
+            data={updatedCards}
+            contentContainerStyle={{ alignItems: "center" }}
+            onEndReached={paginationHandler}
+            renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
+            keyExtractor={(item) => item.id}
+          />
+        </View>
+      );
+
+      setSwipeableView(updatedSwipeableView);
+
+      setPaginated(false);
+    }
+  }, [paginated]);
 
   return (
     (isLoading && <Spinner />) || (
