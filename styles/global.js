@@ -1,5 +1,3 @@
-import { FA5Style } from "@expo/vector-icons/build/FontAwesome5";
-
 export default css = {
   searchBarInput: {
     fontFamily: "Corben_400Regular",

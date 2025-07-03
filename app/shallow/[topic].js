@@ -89,6 +89,7 @@ export default function Shallow() {
   const [isLoading, setIsLoading] = useState(true);
   const [swipeableView, setSwipeableView] = useState([]);
   const [paginated, setPaginated] = useState(false);
+  const [cardsMatrixLimits, setCardsMatrixLimits] = useState({});
 
   const { topic } = useLocalSearchParams();
 
@@ -121,16 +122,16 @@ export default function Shallow() {
     }
     */
 
-    /*
     if (pageno === 0 && related.length) {
       pageno = 1;
     }
-    */
 
     if (pageno < pageNumber) {
       show("Going backwards");
       return;
     }
+
+    /*
     if (!related.length) {
       const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
       const response = await fetch(url);
@@ -154,16 +155,19 @@ export default function Shallow() {
     } else {
       scopedRelated = related;
     }
+    */
+    scopedRelated = cardsMatrix["0"];
 
+    show(scopedRelated[pageno]?.title);
     setPageNumber(pageno);
 
-    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno]?.title}&format=json&origin=*`;
+    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno + 1]?.title}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL);
 
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno + 1]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url);
 
     const data = await response.json();
@@ -178,6 +182,21 @@ export default function Shallow() {
       summary: page.extract,
     }));
 
+    setCardsMatrix(
+      (oldMatrix) =>
+        (oldMatrix = {
+          ...oldMatrix,
+          [pageno]: [
+            {
+              id: topicData.pageid,
+              title: topicData.title,
+              summary: topicData.extract,
+            },
+            ...formattedData,
+          ],
+        }),
+    );
+    /*
     if (formattedData[0]?.title !== scopedRelated[pageno]?.title) {
       setCardsMatrix(
         (oldMatrix) =>
@@ -198,6 +217,7 @@ export default function Shallow() {
         (oldMatrix) => (oldMatrix = { ...oldMatrix, [pageno]: formattedData }),
       );
     }
+    */
   };
 
   const onSwipe = async (event) => {
@@ -206,15 +226,12 @@ export default function Shallow() {
     currentPosition.current = viewPosition;
     //setHasSwiped(viewPosition);
 
-    show(`On swipe at currentPosition.current: ${currentPosition.current}`);
-    show(`Related articles count: ${related.length}`);
     await populateCards(viewPosition);
     //if (viewPosition === 0 && firstLoad.current === false) viewPosition = 1;
     //firstLoad.current = false;
   };
 
   const paginationHandler = (event) => {
-    show(`End reached on ${currentPosition.current}`);
     setPaginated(true);
     /*
     setCardsMatrix(
@@ -243,15 +260,25 @@ export default function Shallow() {
 
     pages = pages.filter((page) => page.extract);
 
+    /*
     let formattedData = pages.map((page) => ({
       id: page.pageid.toString(),
       title: page.title,
       summary: page.extract,
     }));
+    */
+    let formattedData = {};
+    for (const page of pages) {
+      formattedData[page.pageid.toString()] = {
+        title: page.title,
+        summary: page.extract,
+      };
+    }
 
     setRelated(formattedData);
     setIsLoading(false);
 
+    /*
     let allData = [
       {
         id: topicData.pageid.toString(),
@@ -260,6 +287,15 @@ export default function Shallow() {
       },
       ...formattedData,
     ];
+    */
+
+    let allData = {
+      [topicData.pageid.toString()]: {
+        title: topicData.title,
+        summary: topicData.extract,
+      },
+      ...formattedData,
+    };
 
     const allInterests = await ctx.db.getAllAsync(
       `SELECT name
@@ -271,6 +307,8 @@ export default function Shallow() {
       `,
     );
 
+    let combinedAllData = [];
+
     for (const interest of allInterests.reverse()) {
       const interestURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
       const response = await fetch(interestURL);
@@ -278,28 +316,43 @@ export default function Shallow() {
       let interestData = await response?.json();
       interestData = Object.values(interestData.query.pages)[0];
 
-      allData = [
+      if (allData[interestData.pageid.toString()]) {
+        delete allData[interestData.pageid.toString()];
+      }
+
+      combinedAllData = [
         {
           id: interestData.pageid.toString(),
           title: interestData.title,
           summary: interestData.extract,
         },
-        ...allData,
+        ...combinedAllData,
       ];
     }
 
+    for (const key in allData) {
+      combinedAllData.push({
+        id: key,
+        title: allData[key].title,
+        summary: allData[key].extract,
+      });
+    }
+
     setPageNumber(0);
-    setCardsMatrix({ 0: allData });
-    setRelated(allData);
+    setCardsMatrix({ 0: combinedAllData });
+    //setRelated(allData);
   }, []);
 
   useAsyncEffect(async () => {
-    for (const index in cardsMatrix) {
+    show("Matrix changed!");
+    let viewsArray = [];
+
+    for (const key in cardsMatrix) {
       setSwipeableView([
         ...swipeableView,
         <View>
           <FlatList
-            data={cardsMatrix[index]}
+            data={cardsMatrix[key]}
             contentContainerStyle={{ alignItems: "center" }}
             onEndReached={paginationHandler}
             renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
@@ -312,21 +365,41 @@ export default function Shallow() {
 
   useAsyncEffect(async () => {
     if (paginated) {
-      const updatedCards = cardsMatrix["" + currentPosition.current];
-      const updatedSwipeableView = [...swipeableView];
+      show(`Paginating on ${currentPosition.current}`);
 
-      show(updatedCards[0]?.title);
-      const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=400&grsoffset=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+      let updatedCards = cardsMatrix["" + (currentPosition.current - 1)];
+      const updatedSwipeableView = swipeableView;
+
+      if (cardsMatrixLimits[currentPosition.current - 1] === undefined) {
+        setCardsMatrixLimits({
+          ...cardsMatrixLimits,
+          [currentPosition.current - 1]: 2,
+        });
+      } else {
+        setCardsMatrixLimits({
+          ...cardsMatrixLimits,
+          [currentPosition.current - 1]:
+            2 * cardsMatrixLimits[currentPosition.current - 1],
+        });
+      }
+
+      const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(cardsMatrix["" + (currentPosition.current - 1)][0]?.title)}&gsrlimit=${cardsMatrixLimits[currentPosition.current - 1]}&grsoffset=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+
       const response = await fetch(url);
 
       const data = await response.json();
 
-      show(Object.values(data.query.pages));
-      updatedCards.push({
-        id: "999",
-        title: "New Title",
-        summary: "New Summary",
-      });
+      let pages = Object.values(data.query.pages).filter(
+        (page) => page.extract,
+      );
+
+      let formattedData = pages.map((page) => ({
+        id: page.pageid.toString(),
+        title: page.title,
+        summary: page.extract,
+      }));
+
+      updatedCards = [...updatedCards, ...formattedData];
 
       updatedSwipeableView[currentPosition.current] = (
         <View>
