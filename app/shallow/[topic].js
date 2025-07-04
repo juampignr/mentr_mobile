@@ -1,4 +1,4 @@
-import { useContext, useState, useRef, useEffect } from "react";
+import { useContext, useState, useRef, useEffect, memo } from "react";
 import { FlatList, View } from "react-native";
 import { useAsyncEffect } from "@react-hook/async";
 import { Context } from "../_layout.js";
