@@ -88,7 +88,7 @@ export default function Shallow() {
   const [pageNumber, setPageNumber] = useState(-1);
   const [isLoading, setIsLoading] = useState(true);
   const [swipeableView, setSwipeableView] = useState([]);
-  const [paginated, setPaginated] = useState(false);
+  const [paginated, setPaginated] = useState(0);
   const [cardsMatrixLimits, setCardsMatrixLimits] = useState({});
 
   const { topic } = useLocalSearchParams();
@@ -182,6 +182,13 @@ export default function Shallow() {
       summary: page.extract,
     }));
 
+    if (data?.continue) {
+      setCardsMatrixLimits({
+        ...cardsMatrixLimits,
+        [currentPosition.current - 1]: data?.continue?.excontinue,
+      });
+    }
+
     setCardsMatrix(
       (oldMatrix) =>
         (oldMatrix = {
@@ -231,17 +238,10 @@ export default function Shallow() {
     //firstLoad.current = false;
   };
 
-  const paginationHandler = (event) => {
-    setPaginated(true);
-    /*
-    setCardsMatrix(
-      (oldMatrix) =>
-        (oldMatrix["" + currentPosition.current] = [
-          ...oldMatrix["" + currentPosition.current],
-          { id: 999, title: "Loading...", summary: "Loading..." },
-        ]),
-    );
-    */
+  const paginationHandler = async (event) => {
+    show(`Paginating on ${currentPosition.current}`);
+
+    setPaginated(!paginated);
   };
 
   useAsyncEffect(async () => {
@@ -273,6 +273,13 @@ export default function Shallow() {
         title: page.title,
         summary: page.extract,
       };
+    }
+
+    if (data?.continue) {
+      setCardsMatrixLimits({
+        ...cardsMatrixLimits,
+        [currentPosition.current - 1]: data?.continue?.excontinue,
+      });
     }
 
     setRelated(formattedData);
@@ -363,7 +370,9 @@ export default function Shallow() {
     }
   }, [cardsMatrix]);
 
+  /*
   useAsyncEffect(async () => {
+    show("paginated!");
     if (paginated) {
       show(`Paginating on ${currentPosition.current}`);
 
@@ -373,18 +382,24 @@ export default function Shallow() {
       if (cardsMatrixLimits[currentPosition.current - 1] === undefined) {
         setCardsMatrixLimits({
           ...cardsMatrixLimits,
-          [currentPosition.current - 1]: 2,
+          [currentPosition.current - 1]: 0,
         });
       } else {
-        setCardsMatrixLimits({
-          ...cardsMatrixLimits,
-          [currentPosition.current - 1]:
-            2 * cardsMatrixLimits[currentPosition.current - 1],
+        setCardsMatrixLimits((oldMatrix) => {
+          return {
+            ...oldMatrix,
+            [currentPosition.current - 1]:
+              2 + oldMatrix[currentPosition.current - 1],
+          };
         });
       }
 
-      const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(cardsMatrix["" + (currentPosition.current - 1)][0]?.title)}&gsrlimit=${cardsMatrixLimits[currentPosition.current - 1]}&grsoffset=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+      show(`Limits ${cardsMatrixLimits[currentPosition.current - 1]}`);
+      setPaginated(false);
 
+      const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&grsoffset=${200 * cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+
+      show(url);
       const response = await fetch(url);
 
       const data = await response.json();
@@ -414,9 +429,53 @@ export default function Shallow() {
       );
 
       setSwipeableView(updatedSwipeableView);
-
-      setPaginated(false);
     }
+  }, [paginated]);
+  */
+
+  useAsyncEffect(async () => {
+    show(`Limits ${cardsMatrixLimits[currentPosition.current - 1]}`);
+
+    let updatedCards = cardsMatrix["" + (currentPosition.current - 1)];
+    const updatedSwipeableView = swipeableView;
+
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+
+    const response = await fetch(url);
+
+    const data = await response.json();
+
+    let pages = Object.values(data.query.pages).filter((page) => page.extract);
+
+    let formattedData = pages.map((page) => ({
+      id: page.pageid.toString(),
+      title: page.title,
+      summary: page.extract,
+    }));
+
+    if (data?.continue) {
+      setCardsMatrixLimits({
+        ...cardsMatrixLimits,
+        [currentPosition.current - 1]: data?.continue?.excontinue,
+      });
+    }
+
+    updatedCards = [...updatedCards, ...formattedData];
+
+    show(updatedCards.length);
+    updatedSwipeableView[currentPosition.current] = (
+      <View>
+        <FlatList
+          data={updatedCards}
+          contentContainerStyle={{ alignItems: "center" }}
+          onEndReached={paginationHandler}
+          renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
+          keyExtractor={(item) => item.id}
+        />
+      </View>
+    );
+
+    setSwipeableView(updatedSwipeableView);
   }, [paginated]);
 
   return (
