@@ -80,6 +80,7 @@ export default function Shallow() {
   const pageLimit = useRef(10);
   const firstLoad = useRef(true);
   const currentPosition = useRef(0);
+  const currentFlatList = useRef();
 
   const [related, setRelated] = useState([]);
   const [cardsData, setCardsData] = useState([]);
@@ -88,7 +89,9 @@ export default function Shallow() {
   const [pageNumber, setPageNumber] = useState(-1);
   const [isLoading, setIsLoading] = useState(true);
   const [swipeableView, setSwipeableView] = useState([]);
-  const [paginated, setPaginated] = useState(0);
+  const [paginate, setPaginate] = useState(0);
+  const [paginating, setPaginating] = useState(0);
+  const [momentum, setMomentum] = useState(0);
   const [cardsMatrixLimits, setCardsMatrixLimits] = useState({});
 
   const { topic } = useLocalSearchParams();
@@ -127,38 +130,11 @@ export default function Shallow() {
     }
 
     if (pageno < pageNumber) {
-      show("Going backwards");
       return;
     }
 
-    /*
-    if (!related.length) {
-      const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
-      const response = await fetch(url);
-
-      const data = await response.json();
-
-      let pages = Object.values(data.query.pages).filter(
-        (page) => page.extract,
-      );
-
-      pages = pages.filter((page) => page.extract);
-
-      let formattedData = pages.map((page) => ({
-        id: page.pageid.toString(),
-        title: page.title,
-        summary: page.extract,
-      }));
-
-      scopedRelated = formattedData;
-      setRelated(formattedData);
-    } else {
-      scopedRelated = related;
-    }
-    */
     scopedRelated = cardsMatrix["0"];
 
-    show(scopedRelated[pageno]?.title);
     setPageNumber(pageno);
 
     const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno + 1]?.title}&format=json&origin=*`;
@@ -239,9 +215,11 @@ export default function Shallow() {
   };
 
   const paginationHandler = async (event) => {
-    show(`Paginating on ${currentPosition.current}`);
-
-    setPaginated(!paginated);
+    show(momentum);
+    if (momentum) {
+      setPaginate(!paginate);
+      //setMomentum(!momentum);
+    }
   };
 
   useAsyncEffect(async () => {
@@ -351,7 +329,6 @@ export default function Shallow() {
   }, []);
 
   useAsyncEffect(async () => {
-    show("Matrix changed!");
     let viewsArray = [];
 
     for (const key in cardsMatrix) {
@@ -359,9 +336,11 @@ export default function Shallow() {
         ...swipeableView,
         <View>
           <FlatList
+            //ref={currentFlatList}
             data={cardsMatrix[key]}
             contentContainerStyle={{ alignItems: "center" }}
             onEndReached={paginationHandler}
+            onMomentumScrollBegin={() => setMomentum(1)}
             renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
             keyExtractor={(item) => item.id}
           />
@@ -370,71 +349,10 @@ export default function Shallow() {
     }
   }, [cardsMatrix]);
 
-  /*
   useAsyncEffect(async () => {
-    show("paginated!");
-    if (paginated) {
-      show(`Paginating on ${currentPosition.current}`);
-
-      let updatedCards = cardsMatrix["" + (currentPosition.current - 1)];
-      const updatedSwipeableView = swipeableView;
-
-      if (cardsMatrixLimits[currentPosition.current - 1] === undefined) {
-        setCardsMatrixLimits({
-          ...cardsMatrixLimits,
-          [currentPosition.current - 1]: 0,
-        });
-      } else {
-        setCardsMatrixLimits((oldMatrix) => {
-          return {
-            ...oldMatrix,
-            [currentPosition.current - 1]:
-              2 + oldMatrix[currentPosition.current - 1],
-          };
-        });
-      }
-
-      show(`Limits ${cardsMatrixLimits[currentPosition.current - 1]}`);
-      setPaginated(false);
-
-      const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&grsoffset=${200 * cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
-
-      show(url);
-      const response = await fetch(url);
-
-      const data = await response.json();
-
-      let pages = Object.values(data.query.pages).filter(
-        (page) => page.extract,
-      );
-
-      let formattedData = pages.map((page) => ({
-        id: page.pageid.toString(),
-        title: page.title,
-        summary: page.extract,
-      }));
-
-      updatedCards = [...updatedCards, ...formattedData];
-
-      updatedSwipeableView[currentPosition.current] = (
-        <View>
-          <FlatList
-            data={updatedCards}
-            contentContainerStyle={{ alignItems: "center" }}
-            onEndReached={paginationHandler}
-            renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
-            keyExtractor={(item) => item.id}
-          />
-        </View>
-      );
-
-      setSwipeableView(updatedSwipeableView);
-    }
-  }, [paginated]);
-  */
-
-  useAsyncEffect(async () => {
-    show(`Limits ${cardsMatrixLimits[currentPosition.current - 1]}`);
+    show(
+      `Paginating from ${cardsMatrix[currentPosition.current - 1][0]?.title} with ${cardsMatrixLimits[currentPosition.current - 1]} cards`,
+    );
 
     let updatedCards = cardsMatrix["" + (currentPosition.current - 1)];
     const updatedSwipeableView = swipeableView;
@@ -454,21 +372,35 @@ export default function Shallow() {
     }));
 
     if (data?.continue) {
+      show(`Continue paginating from ${data?.continue?.excontinue}:`);
+      show(formattedData);
       setCardsMatrixLimits({
         ...cardsMatrixLimits,
         [currentPosition.current - 1]: data?.continue?.excontinue,
       });
     }
 
+    show(formattedData.length);
     updatedCards = [...updatedCards, ...formattedData];
 
-    show(updatedCards.length);
+    /*
+    <FlatList
+      ref={currentFlatList}
+      data={updatedCards}
+      contentContainerStyle={{ alignItems: "center" }}
+      onEndReached={paginationHandler}
+      renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
+      keyExtractor={(item) => item.id}
+    />
+    */
     updatedSwipeableView[currentPosition.current] = (
       <View>
         <FlatList
+          ref={currentFlatList}
           data={updatedCards}
           contentContainerStyle={{ alignItems: "center" }}
           onEndReached={paginationHandler}
+          onMomentumScrollBegin={() => setMomentum(1)}
           renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
           keyExtractor={(item) => item.id}
         />
@@ -476,7 +408,11 @@ export default function Shallow() {
     );
 
     setSwipeableView(updatedSwipeableView);
-  }, [paginated]);
+  }, [paginate]);
+
+  useEffect(() => {
+    show(momentum);
+  }, [momentum]);
 
   return (
     (isLoading && <Spinner />) || (
