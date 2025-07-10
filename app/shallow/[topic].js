@@ -79,7 +79,7 @@ export default function Shallow() {
   const timeoutId = useRef(0);
   const pageLimit = useRef(10);
   const firstLoad = useRef(true);
-  const currentPosition = useRef(0);
+  const currentPosition = useRef(-1);
   const currentFlatList = useRef();
 
   const [related, setRelated] = useState([]);
@@ -206,16 +206,10 @@ export default function Shallow() {
     let viewPosition = event.nativeEvent.position;
 
     currentPosition.current = viewPosition;
-    //setHasSwiped(viewPosition);
-
     await populateCards(viewPosition);
-    //if (viewPosition === 0 && firstLoad.current === false) viewPosition = 1;
-    //firstLoad.current = false;
   };
 
   const paginationHandler = async (event) => {
-    show(`Momentum from paginate ${momentum}`);
-
     setPaginate(1);
   };
 
@@ -235,13 +229,6 @@ export default function Shallow() {
 
     pages = pages.filter((page) => page.extract);
 
-    /*
-    let formattedData = pages.map((page) => ({
-      id: page.pageid.toString(),
-      title: page.title,
-      summary: page.extract,
-    }));
-    */
     let formattedData = {};
     for (const page of pages) {
       formattedData[page.pageid.toString()] = {
@@ -316,13 +303,12 @@ export default function Shallow() {
       combinedAllData.push({
         id: key,
         title: allData[key].title,
-        summary: allData[key].extract,
+        summary: allData[key].summary,
       });
     }
 
     setPageNumber(0);
     setCardsMatrix({ 0: combinedAllData });
-    //setRelated(allData);
   }, []);
 
   useAsyncEffect(async () => {
@@ -350,15 +336,17 @@ export default function Shallow() {
   useAsyncEffect(async () => {
     show(`Paginate ${paginate}, momentum ${momentum}`);
     if (paginate && !momentum) {
-      show(
-        `Paginating from ${cardsMatrix[currentPosition.current - 1][0]?.title} with ${cardsMatrixLimits[currentPosition.current - 1]} cards`,
-      );
+      show(cardsMatrix);
+      let updatedCards =
+        currentPosition.current === -1
+          ? cardsMatrix["-1"]
+          : cardsMatrix["" + (currentPosition.current - 1)];
 
-      let updatedCards = cardsMatrix["" + (currentPosition.current - 1)];
+      show(updatedCards);
       const updatedSwipeableView = swipeableView;
 
       const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
-
+      show(url);
       const response = await fetch(url);
 
       const data = await response.json();
@@ -374,15 +362,12 @@ export default function Shallow() {
       }));
 
       if (data?.continue) {
-        show(`Continue paginating from ${data?.continue?.excontinue}:`);
-        show(formattedData);
         setCardsMatrixLimits({
           ...cardsMatrixLimits,
           [currentPosition.current - 1]: data?.continue?.excontinue,
         });
       }
 
-      show(formattedData.length);
       updatedCards = [...updatedCards, ...formattedData];
 
       updatedSwipeableView[currentPosition.current] = (
