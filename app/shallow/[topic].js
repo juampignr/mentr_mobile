@@ -90,7 +90,6 @@ export default function Shallow() {
   const [isLoading, setIsLoading] = useState(true);
   const [swipeableView, setSwipeableView] = useState([]);
   const [paginate, setPaginate] = useState(0);
-  const [paginating, setPaginating] = useState(0);
   const [momentum, setMomentum] = useState(0);
   const [cardsMatrixLimits, setCardsMatrixLimits] = useState({});
 
@@ -215,11 +214,9 @@ export default function Shallow() {
   };
 
   const paginationHandler = async (event) => {
-    show(momentum);
-    if (momentum) {
-      setPaginate(!paginate);
-      //setMomentum(!momentum);
-    }
+    show(`Momentum from paginate ${momentum}`);
+
+    setPaginate(1);
   };
 
   useAsyncEffect(async () => {
@@ -341,6 +338,7 @@ export default function Shallow() {
             contentContainerStyle={{ alignItems: "center" }}
             onEndReached={paginationHandler}
             onMomentumScrollBegin={() => setMomentum(1)}
+            onMomentumScrollEnd={() => setMomentum(0)}
             renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
             keyExtractor={(item) => item.id}
           />
@@ -350,69 +348,61 @@ export default function Shallow() {
   }, [cardsMatrix]);
 
   useAsyncEffect(async () => {
-    show(
-      `Paginating from ${cardsMatrix[currentPosition.current - 1][0]?.title} with ${cardsMatrixLimits[currentPosition.current - 1]} cards`,
-    );
+    show(`Paginate ${paginate}, momentum ${momentum}`);
+    if (paginate && !momentum) {
+      show(
+        `Paginating from ${cardsMatrix[currentPosition.current - 1][0]?.title} with ${cardsMatrixLimits[currentPosition.current - 1]} cards`,
+      );
 
-    let updatedCards = cardsMatrix["" + (currentPosition.current - 1)];
-    const updatedSwipeableView = swipeableView;
+      let updatedCards = cardsMatrix["" + (currentPosition.current - 1)];
+      const updatedSwipeableView = swipeableView;
 
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+      const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
 
-    const response = await fetch(url);
+      const response = await fetch(url);
 
-    const data = await response.json();
+      const data = await response.json();
 
-    let pages = Object.values(data.query.pages).filter((page) => page.extract);
+      let pages = Object.values(data.query.pages).filter(
+        (page) => page.extract,
+      );
 
-    let formattedData = pages.map((page) => ({
-      id: page.pageid.toString(),
-      title: page.title,
-      summary: page.extract,
-    }));
+      let formattedData = pages.map((page) => ({
+        id: page.pageid.toString(),
+        title: page.title,
+        summary: page.extract,
+      }));
 
-    if (data?.continue) {
-      show(`Continue paginating from ${data?.continue?.excontinue}:`);
-      show(formattedData);
-      setCardsMatrixLimits({
-        ...cardsMatrixLimits,
-        [currentPosition.current - 1]: data?.continue?.excontinue,
-      });
+      if (data?.continue) {
+        show(`Continue paginating from ${data?.continue?.excontinue}:`);
+        show(formattedData);
+        setCardsMatrixLimits({
+          ...cardsMatrixLimits,
+          [currentPosition.current - 1]: data?.continue?.excontinue,
+        });
+      }
+
+      show(formattedData.length);
+      updatedCards = [...updatedCards, ...formattedData];
+
+      updatedSwipeableView[currentPosition.current] = (
+        <View>
+          <FlatList
+            data={updatedCards}
+            contentContainerStyle={{ alignItems: "center" }}
+            onEndReached={paginationHandler}
+            onMomentumScrollBegin={() => setMomentum(1)}
+            onMomentumScrollEnd={() => setMomentum(0)}
+            renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
+            keyExtractor={(item) => item.id}
+          />
+        </View>
+      );
+
+      setSwipeableView(updatedSwipeableView);
+      setPaginate(0);
     }
-
-    show(formattedData.length);
-    updatedCards = [...updatedCards, ...formattedData];
-
-    /*
-    <FlatList
-      ref={currentFlatList}
-      data={updatedCards}
-      contentContainerStyle={{ alignItems: "center" }}
-      onEndReached={paginationHandler}
-      renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
-      keyExtractor={(item) => item.id}
-    />
-    */
-    updatedSwipeableView[currentPosition.current] = (
-      <View>
-        <FlatList
-          ref={currentFlatList}
-          data={updatedCards}
-          contentContainerStyle={{ alignItems: "center" }}
-          onEndReached={paginationHandler}
-          onMomentumScrollBegin={() => setMomentum(1)}
-          renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
-          keyExtractor={(item) => item.id}
-        />
-      </View>
-    );
-
-    setSwipeableView(updatedSwipeableView);
-  }, [paginate]);
-
-  useEffect(() => {
-    show(momentum);
-  }, [momentum]);
+  }, [paginate, momentum]);
 
   return (
     (isLoading && <Spinner />) || (
