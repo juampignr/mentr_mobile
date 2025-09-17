@@ -12,6 +12,7 @@ import chalk from "chalk";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Spinner from "../../components/Spinner";
 import { all } from "axios";
+import { I18nManager } from "react-native";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -97,7 +98,11 @@ export default function Shallow() {
 
   const searchTopic = async (topic) => {
     const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+      },
+    });
 
     const data = await response.json();
 
@@ -124,26 +129,34 @@ export default function Shallow() {
     }
     */
 
-    if (pageno === 0 && related.length) {
-      pageno = 1;
-    }
-
-    if (pageno < pageNumber) {
+    /*
+    if (pageno <= pageNumber) {
+      show("Going backwards, not populating");
       return;
     }
+    */
+    show(`Populating page ${pageno}`);
 
     scopedRelated = cardsMatrix["0"];
 
-    setPageNumber(pageno);
+    show(`Searching for pages related to ${scopedRelated[pageno]?.title}`);
 
-    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno + 1]?.title}&format=json&origin=*`;
-    const topicResponse = await fetch(topicURL);
+    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno]?.title}&format=json&origin=*`;
+    const topicResponse = await fetch(topicURL, {
+      headers: {
+        "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+      },
+    });
 
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno + 1]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
-    const response = await fetch(url);
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+      },
+    });
 
     const data = await response.json();
 
@@ -160,10 +173,11 @@ export default function Shallow() {
     if (data?.continue) {
       setCardsMatrixLimits({
         ...cardsMatrixLimits,
-        [currentPosition.current - 1]: data?.continue?.excontinue,
+        [pageno]: data?.continue?.excontinue,
       });
     }
 
+    /*
     setCardsMatrix(
       (oldMatrix) =>
         (oldMatrix = {
@@ -174,11 +188,13 @@ export default function Shallow() {
               title: topicData.title,
               summary: topicData.extract,
             },
+
             ...formattedData,
           ],
         }),
     );
-    /*
+    */
+
     if (formattedData[0]?.title !== scopedRelated[pageno]?.title) {
       setCardsMatrix(
         (oldMatrix) =>
@@ -199,12 +215,14 @@ export default function Shallow() {
         (oldMatrix) => (oldMatrix = { ...oldMatrix, [pageno]: formattedData }),
       );
     }
-    */
+
+    setPageNumber(pageno + 1);
   };
 
   const onSwipe = async (event) => {
     let viewPosition = event.nativeEvent.position;
 
+    show(`Swiped onto ${viewPosition}`);
     currentPosition.current = viewPosition;
     await populateCards(viewPosition);
   };
@@ -215,13 +233,21 @@ export default function Shallow() {
 
   useAsyncEffect(async () => {
     const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(topic)}&format=json&origin=*`;
-    const topicResponse = await fetch(topicURL);
+    const topicResponse = await fetch(topicURL, {
+      headers: {
+        "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+      },
+    });
 
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
     const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+      },
+    });
 
     const data = await response.json();
 
@@ -280,7 +306,11 @@ export default function Shallow() {
 
     for (const interest of allInterests.reverse()) {
       const interestURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
-      const response = await fetch(interestURL);
+      const response = await fetch(interestURL, {
+        headers: {
+          "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+        },
+      });
 
       let interestData = await response?.json();
       interestData = Object.values(interestData.query.pages)[0];
@@ -314,40 +344,49 @@ export default function Shallow() {
   useAsyncEffect(async () => {
     let viewsArray = [];
 
-    for (const key in cardsMatrix) {
-      setSwipeableView([
-        ...swipeableView,
-        <View>
-          <FlatList
-            //ref={currentFlatList}
-            data={cardsMatrix[key]}
-            contentContainerStyle={{ alignItems: "center" }}
-            onEndReached={paginationHandler}
-            onMomentumScrollBegin={() => setMomentum(1)}
-            onMomentumScrollEnd={() => setMomentum(0)}
-            renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
-            keyExtractor={(item) => item.id}
-          />
-        </View>,
-      ]);
+    show(Object.keys(cardsMatrix));
+    show(cardsMatrix["0"][1]);
+    if (Object.keys(cardsMatrix).length > 1) show(cardsMatrix["1"][1]);
+
+    if (Object.keys(cardsMatrix).length > 2) show(cardsMatrix["2"][1]);
+
+    for (const key of Object.keys(cardsMatrix)) {
+      setSwipeableView((oldView) => {
+        return [
+          ...oldView,
+          <View>
+            <FlatList
+              //ref={currentFlatList}
+              data={cardsMatrix[key]}
+              contentContainerStyle={{ alignItems: "center" }}
+              onEndReached={paginationHandler}
+              onMomentumScrollBegin={() => setMomentum(1)}
+              onMomentumScrollEnd={() => setMomentum(0)}
+              renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
+              keyExtractor={(item) => item.id}
+            />
+          </View>,
+        ];
+      });
     }
   }, [cardsMatrix]);
 
   useAsyncEffect(async () => {
-    show(`Paginate ${paginate}, momentum ${momentum}`);
     if (paginate && !momentum) {
-      show(cardsMatrix);
       let updatedCards =
         currentPosition.current === -1
           ? cardsMatrix["-1"]
           : cardsMatrix["" + (currentPosition.current - 1)];
 
-      show(updatedCards);
       const updatedSwipeableView = swipeableView;
 
       const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
-      show(url);
-      const response = await fetch(url);
+
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+        },
+      });
 
       const data = await response.json();
 

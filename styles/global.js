@@ -1,4 +1,4 @@
-export default css = {
+const css = {
   searchBarInput: {
     fontFamily: "Corben_400Regular",
     fontSize: 20,
@@ -175,3 +175,5 @@ export default css = {
     display: "none",
   },
 };
+
+export default css;

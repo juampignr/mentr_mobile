@@ -29,7 +29,7 @@ export default function Spinner({ size = 60, color = "#b147ff99" }) {
   return (
     <View style={styles.container}>
       <Animated.View style={animatedStyle}>
-        <AntDesign name="loading2" size={size} color={color} />
+        <AntDesign name="loading" size={size} color={color} />
       </Animated.View>
     </View>
   );
