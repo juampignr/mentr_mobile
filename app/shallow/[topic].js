@@ -220,7 +220,7 @@ export default function Shallow() {
   };
 
   const onSwipe = async (event) => {
-    let viewPosition = event.nativeEvent.position;
+    let viewPosition = event.nativeEvent.position + 1;
 
     show(`Swiped onto ${viewPosition}`);
     currentPosition.current = viewPosition;
