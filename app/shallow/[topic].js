@@ -80,7 +80,7 @@ export default function Shallow() {
   const timeoutId = useRef(0);
   const pageLimit = useRef(10);
   const firstLoad = useRef(true);
-  const currentPosition = useRef(-1);
+  const currentPosition = useRef(1);
   const currentFlatList = useRef();
 
   const [related, setRelated] = useState([]);
@@ -123,25 +123,18 @@ export default function Shallow() {
     let scopedRelated = [];
 
     /*
-    if (swipeableView[pageno]) {
-      show("Page already set");
-      return;
-    }
-    */
-
-    /*
-    if (pageno <= pageNumber) {
+    if (currentPosition.current >= pageno) {
       show("Going backwards, not populating");
       return;
     }
     */
+
     show(`Populating page ${pageno}`);
 
-    scopedRelated = cardsMatrix["0"];
-
+    scopedRelated = cardsMatrix["0"].slice(1);
     show(`Searching for pages related to ${scopedRelated[pageno]?.title}`);
 
-    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno]?.title}&format=json&origin=*`;
+    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno + 1]?.title}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -151,7 +144,7 @@ export default function Shallow() {
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno + 1]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -171,30 +164,27 @@ export default function Shallow() {
     }));
 
     if (data?.continue) {
-      setCardsMatrixLimits({
-        ...cardsMatrixLimits,
-        [pageno]: data?.continue?.excontinue,
-      });
+      const newCardsMatrixLimits = cardsMatrixLimits;
+
+      show(newCardsMatrixLimits);
+      newCardsMatrixLimits[currentPosition.current] =
+        data?.continue?.excontinue;
+      setCardsMatrixLimits(newCardsMatrixLimits);
     }
 
+    setCardsMatrix((oldMatrix) => ({
+      ...oldMatrix,
+      [pageno]: [
+        {
+          id: topicData.pageid,
+          title: topicData.title,
+          summary: topicData.extract,
+        },
+        ...formattedData,
+      ],
+    }));
+
     /*
-    setCardsMatrix(
-      (oldMatrix) =>
-        (oldMatrix = {
-          ...oldMatrix,
-          [pageno]: [
-            {
-              id: topicData.pageid,
-              title: topicData.title,
-              summary: topicData.extract,
-            },
-
-            ...formattedData,
-          ],
-        }),
-    );
-    */
-
     if (formattedData[0]?.title !== scopedRelated[pageno]?.title) {
       setCardsMatrix(
         (oldMatrix) =>
@@ -215,16 +205,18 @@ export default function Shallow() {
         (oldMatrix) => (oldMatrix = { ...oldMatrix, [pageno]: formattedData }),
       );
     }
-
+    */
     setPageNumber(pageno + 1);
   };
 
   const onSwipe = async (event) => {
     let viewPosition = event.nativeEvent.position + 1;
 
-    show(`Swiped onto ${viewPosition}`);
-    currentPosition.current = viewPosition;
-    await populateCards(viewPosition);
+    show(`Swiped onto ${currentPosition.current}`);
+
+    await populateCards(currentPosition.current);
+
+    currentPosition.current = currentPosition.current + 1;
   };
 
   const paginationHandler = async (event) => {
@@ -264,10 +256,11 @@ export default function Shallow() {
     }
 
     if (data?.continue) {
-      setCardsMatrixLimits({
-        ...cardsMatrixLimits,
-        [currentPosition.current - 1]: data?.continue?.excontinue,
-      });
+      const newCardsMatrixLimits = cardsMatrixLimits;
+
+      newCardsMatrixLimits[currentPosition.current] =
+        data?.continue?.excontinue;
+      setCardsMatrixLimits(newCardsMatrixLimits);
     }
 
     setRelated(formattedData);
@@ -337,38 +330,27 @@ export default function Shallow() {
       });
     }
 
-    setPageNumber(0);
     setCardsMatrix({ 0: combinedAllData });
+    currentPosition.current = 1;
   }, []);
 
   useAsyncEffect(async () => {
     let viewsArray = [];
 
-    show(Object.keys(cardsMatrix));
-    show(cardsMatrix["0"][1]);
-    if (Object.keys(cardsMatrix).length > 1) show(cardsMatrix["1"][1]);
-
-    if (Object.keys(cardsMatrix).length > 2) show(cardsMatrix["2"][1]);
-
-    for (const key of Object.keys(cardsMatrix)) {
-      setSwipeableView((oldView) => {
-        return [
-          ...oldView,
-          <View>
-            <FlatList
-              //ref={currentFlatList}
-              data={cardsMatrix[key]}
-              contentContainerStyle={{ alignItems: "center" }}
-              onEndReached={paginationHandler}
-              onMomentumScrollBegin={() => setMomentum(1)}
-              onMomentumScrollEnd={() => setMomentum(0)}
-              renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
-              keyExtractor={(item) => item.id}
-            />
-          </View>,
-        ];
-      });
-    }
+    const newView = Object.entries(cardsMatrix).map(([key, cards]) => (
+      <View key={key}>
+        <FlatList
+          data={cards}
+          contentContainerStyle={{ alignItems: "center" }}
+          onEndReached={paginationHandler}
+          onMomentumScrollBegin={() => setMomentum(1)}
+          onMomentumScrollEnd={() => setMomentum(0)}
+          renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
+          keyExtractor={(item) => item.id}
+        />
+      </View>
+    ));
+    setSwipeableView(newView);
   }, [cardsMatrix]);
 
   useAsyncEffect(async () => {
