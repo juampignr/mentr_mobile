@@ -258,8 +258,7 @@ export default function Shallow() {
     if (data?.continue) {
       const newCardsMatrixLimits = cardsMatrixLimits;
 
-      newCardsMatrixLimits[currentPosition.current] =
-        data?.continue?.excontinue;
+      newCardsMatrixLimits["0"] = data?.continue?.excontinue;
       setCardsMatrixLimits(newCardsMatrixLimits);
     }
 
@@ -355,11 +354,10 @@ export default function Shallow() {
 
   useAsyncEffect(async () => {
     if (paginate && !momentum) {
-      let updatedCards =
-        currentPosition.current === -1
-          ? cardsMatrix["-1"]
-          : cardsMatrix["" + (currentPosition.current - 1)];
+      show(`Paginating on ${currentPosition.current - 2}`);
+      let updatedCards = cardsMatrix["" + currentPosition.current - 2];
 
+      show(updatedCards);
       const updatedSwipeableView = swipeableView;
 
       const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
@@ -385,13 +383,16 @@ export default function Shallow() {
       if (data?.continue) {
         setCardsMatrixLimits({
           ...cardsMatrixLimits,
-          [currentPosition.current - 1]: data?.continue?.excontinue,
+          [currentPosition.current - 2]: data?.continue?.excontinue,
         });
       }
 
       updatedCards = [...updatedCards, ...formattedData];
 
-      updatedSwipeableView[currentPosition.current] = (
+      setCardsMatrix({ 0: updatedCards });
+
+      /*
+      updatedSwipeableView[currentPosition.current - 2] = (
         <View>
           <FlatList
             data={updatedCards}
@@ -406,6 +407,8 @@ export default function Shallow() {
       );
 
       setSwipeableView(updatedSwipeableView);
+
+      */
       setPaginate(0);
     }
   }, [paginate, momentum]);
