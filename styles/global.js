@@ -119,7 +119,7 @@ const css = {
     alignSelf: "left",
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 15,
+    marginTop: 20,
   },
   sectionTitle: {
     flex: 8,
@@ -130,7 +130,7 @@ const css = {
     lineHeight: 30,
   },
   contentSummary: {
-    marginTop: 5,
+    marginTop: 15,
     fontFamily: "Corben_400Regular",
     fontSize: 16,
     lineHeight: 20,

@@ -12,7 +12,13 @@ export default class RNWiki {
       "Explanatory notes",
     ];
     const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&titles=${encodeURIComponent(query)}&prop=extracts&explaintext`;
-    let response = await (await fetch(url)).json();
+    let response = await (
+      await fetch(url, {
+        headers: {
+          "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+        },
+      })
+    ).json();
 
     response = Object.values(response.query.pages)[0];
     response = response.extract;
@@ -60,8 +66,6 @@ export default class RNWiki {
         lastPartType = "content";
       }
     }
-
-    //console.log(parsedResponse);
 
     return parsedResponse;
   }

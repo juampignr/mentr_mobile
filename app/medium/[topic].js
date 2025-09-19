@@ -16,7 +16,6 @@ import css from "../../styles/global.js";
 import chalk from "chalk";
 import Section from "../../components/Section.js";
 import RNWiki from "../../libraries/RNWiki.mjs";
-import { all } from "axios";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -83,10 +82,8 @@ export default function Medium() {
   let { topic } = useLocalSearchParams();
   let chain = topic.split(":");
 
-  firstTopic = chain[0];
-  lastTopic = chain[1];
-
-  topic = lastTopic;
+  const firstTopic = chain[0];
+  topic = chain[1];
 
   const [sections, setSections] = useState([]);
   const [summary, setSummary] = useState("");
@@ -111,6 +108,42 @@ export default function Medium() {
           `SELECT * FROM interest WHERE disciple_email = 'juampi.gnr@gmail.com' AND name = '${topic}'`,
         );
 
+        const allInterests = ctx.db.getAllSync(
+          `SELECT chain,name,spent FROM interest WHERE disciple_email = 'juampi.gnr@gmail.com'`,
+        );
+        const orderedInterests = ctx.db.getAllSync(
+          `SELECT name, chain, spent
+          FROM
+            interest
+          WHERE
+            disciple_email = 'juampi.gnr@gmail.com'
+          ORDER BY
+            chain, spent DESC;
+          GROUP BY chain;
+          `,
+        );
+
+        show(allInterests);
+
+        show(orderedInterests);
+
+        const mostInterestingByChain = {};
+
+        //More on this later...
+        for (const element of orderedInterests) {
+          if (element?.chain in mostInterestingByChain) {
+            if (mostInterestingByChain[element.chain].length < 3) {
+              mostInterestingByChain[element.chain].push(element?.name);
+            }
+          } else {
+            mostInterestingByChain[element.chain] = [element?.name];
+          }
+        }
+
+        for (const chain in mostInterestingByChain) {
+          mostInterestingByChain[chain] = mostInterestingByChain[chain].join();
+        }
+        show(mostInterestingByChain);
         /* Query on shallow
         const allInterests = ctx.db.getAllSync(
           `SELECT
@@ -164,7 +197,7 @@ export default function Medium() {
         const content = nextPart;
 
         const sectionObject = {
-          title: title,
+          title: title.replace(/:/g, ""),
           subtitle: subtitle,
           content: content,
         };
@@ -183,7 +216,6 @@ export default function Medium() {
         <Text style={css.contentTitle}>{topic}</Text>
         <Text style={css.contentSummary}>{summary}</Text>
         {sections}
-        //Footer to take into account searchBar
         <View style={{ marginTop: 30 }}></View>
       </ScrollView>
     </>

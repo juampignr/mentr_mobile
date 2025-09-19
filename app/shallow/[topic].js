@@ -129,10 +129,7 @@ export default function Shallow() {
     }
     */
 
-    show(`Populating page ${pageno}`);
-
     scopedRelated = cardsMatrix["0"].slice(1);
-    show(`Searching for pages related to ${scopedRelated[pageno]?.title}`);
 
     const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno + 1]?.title}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
@@ -166,7 +163,6 @@ export default function Shallow() {
     if (data?.continue) {
       const newCardsMatrixLimits = cardsMatrixLimits;
 
-      show(newCardsMatrixLimits);
       newCardsMatrixLimits[currentPosition.current] =
         data?.continue?.excontinue;
       setCardsMatrixLimits(newCardsMatrixLimits);
@@ -211,8 +207,6 @@ export default function Shallow() {
 
   const onSwipe = async (event) => {
     let viewPosition = event.nativeEvent.position + 1;
-
-    show(`Swiped onto ${currentPosition.current}`);
 
     await populateCards(currentPosition.current);
 
@@ -354,10 +348,8 @@ export default function Shallow() {
 
   useAsyncEffect(async () => {
     if (paginate && !momentum) {
-      show(`Paginating on ${currentPosition.current - 2}`);
       let updatedCards = cardsMatrix["" + currentPosition.current - 2];
 
-      show(updatedCards[0]);
       const updatedSwipeableView = swipeableView;
 
       const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
@@ -388,8 +380,6 @@ export default function Shallow() {
       }
 
       updatedCards = [...updatedCards, ...formattedData];
-
-      show(updatedCards.length);
 
       setCardsMatrix({
         ...cardsMatrix,
