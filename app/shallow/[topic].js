@@ -345,7 +345,7 @@ export default function Shallow() {
           onMomentumScrollBegin={() => setMomentum(1)}
           onMomentumScrollEnd={() => setMomentum(0)}
           renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, index) => `${item.id}${index}`}
         />
       </View>
     ));
@@ -357,7 +357,7 @@ export default function Shallow() {
       show(`Paginating on ${currentPosition.current - 2}`);
       let updatedCards = cardsMatrix["" + currentPosition.current - 2];
 
-      show(updatedCards);
+      show(updatedCards[0]);
       const updatedSwipeableView = swipeableView;
 
       const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
@@ -389,7 +389,12 @@ export default function Shallow() {
 
       updatedCards = [...updatedCards, ...formattedData];
 
-      setCardsMatrix({ 0: updatedCards });
+      show(updatedCards.length);
+
+      setCardsMatrix({
+        ...cardsMatrix,
+        [`${currentPosition.current - 2}`]: updatedCards,
+      });
 
       /*
       updatedSwipeableView[currentPosition.current - 2] = (
@@ -407,7 +412,6 @@ export default function Shallow() {
       );
 
       setSwipeableView(updatedSwipeableView);
-
       */
       setPaginate(0);
     }
