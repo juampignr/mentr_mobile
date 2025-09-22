@@ -16,6 +16,7 @@ import css from "../../styles/global.js";
 import chalk from "chalk";
 import Section from "../../components/Section.js";
 import RNWiki from "../../libraries/RNWiki.mjs";
+import { all } from "axios";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -95,7 +96,7 @@ export default function Medium() {
       // Screen is focused
       startTimeRef.current = Date.now();
 
-      return () => {
+      return async () => {
         const endTime = Date.now();
         const timeSpent = endTime - startTimeRef.current;
 
@@ -111,39 +112,65 @@ export default function Medium() {
         const allInterests = ctx.db.getAllSync(
           `SELECT chain,name,spent FROM interest WHERE disciple_email = 'juampi.gnr@gmail.com'`,
         );
-        const orderedInterests = ctx.db.getAllSync(
-          `SELECT name, chain, spent
+        const orderedInterests = Object.values(
+          ctx.db.getAllSync(
+            `SELECT name, chain, spent
           FROM
             interest
           WHERE
-            disciple_email = 'juampi.gnr@gmail.com'
+            disciple_email = 'juampi.gnr@gmail.com' AND chain = '${firstTopic}'
           ORDER BY
             chain, spent DESC;
           GROUP BY chain;
           `,
+          ),
         );
 
-        show(allInterests);
+        const allCategories = [];
 
-        show(orderedInterests);
+        for (let [i, n] = [0, orderedInterests.length]; i < n; i++) {
+          if (i < 10) {
+            const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(orderedInterests[i].name)}&prop=categories|links|linkshere&cllimit=10&pllimit=10&lhlimit=10&format=json&origin=*`;
+            const response = await fetch(url, {
+              headers: {
+                "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+              },
+            });
 
-        const mostInterestingByChain = {};
+            let linksResults = (await response.json()).query.pages;
 
-        //More on this later...
-        for (const element of orderedInterests) {
-          if (element?.chain in mostInterestingByChain) {
-            if (mostInterestingByChain[element.chain].length < 3) {
-              mostInterestingByChain[element.chain].push(element?.name);
+            linksResults = Object.values(linksResults);
+            const excludePatterns = [
+              /All/,
+              /Articles/,
+              /Wikipedia/,
+              /CS1/,
+              /stub/i,
+              /weasel/i,
+              /unsourced/i,
+              /cleanup/i,
+            ];
+
+            for (const page of linksResults) {
+              page.categories.map((category) => {
+                if (!excludePatterns.some((p) => p.test(category.title)))
+                  allCategories.push(category.title.replace("Category:", ""));
+              });
             }
-          } else {
-            mostInterestingByChain[element.chain] = [element?.name];
           }
         }
 
-        for (const chain in mostInterestingByChain) {
-          mostInterestingByChain[chain] = mostInterestingByChain[chain].join();
-        }
-        show(mostInterestingByChain);
+        show(
+          allCategories.reduce((acc, curr) => {
+            if (curr in acc) {
+              acc[curr] += 1;
+            } else {
+              acc[curr] = 1;
+            }
+            return acc;
+          }, {}),
+        );
+
         /* Query on shallow
         const allInterests = ctx.db.getAllSync(
           `SELECT
