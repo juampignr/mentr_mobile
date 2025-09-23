@@ -283,13 +283,14 @@ export default function Shallow() {
       FROM
         interest
       WHERE
-        chain = '${encodeURIComponent(topic)}'
+        chain = '${topic}'
       ORDER BY spent DESC
       `,
     );
 
     let combinedAllData = [];
 
+    show(allInterests);
     for (const interest of allInterests.reverse()) {
       const interestURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
       const response = await fetch(interestURL, {

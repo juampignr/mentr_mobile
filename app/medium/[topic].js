@@ -126,11 +126,11 @@ export default function Medium() {
           ),
         );
 
-        const allCategories = [];
+        const allRelatedTopics = [];
 
         for (let [i, n] = [0, orderedInterests.length]; i < n; i++) {
           if (i < 10) {
-            const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(orderedInterests[i].name)}&prop=categories|links|linkshere&cllimit=10&pllimit=10&lhlimit=10&format=json&origin=*`;
+            const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(orderedInterests[i].name)}&prop=categories|links|linkshere&cllimit=50&pllimit=50&lhlimit=50&format=json&origin=*`;
             const response = await fetch(url, {
               headers: {
                 "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -152,25 +152,36 @@ export default function Medium() {
             ];
 
             for (const page of linksResults) {
-              page.categories.map((category) => {
+              page.links.map((category) => {
                 if (!excludePatterns.some((p) => p.test(category.title)))
-                  allCategories.push(category.title.replace("Category:", ""));
+                  allRelatedTopics.push(
+                    category.title.replace("Category:", ""),
+                  );
+              });
+
+              page.linkshere.map((category) => {
+                if (!excludePatterns.some((p) => p.test(category.title)))
+                  allRelatedTopics.push(
+                    category.title.replace("Category:", ""),
+                  );
               });
             }
           }
         }
 
-        show(
-          allCategories.reduce((acc, curr) => {
-            if (curr in acc) {
-              acc[curr] += 1;
-            } else {
-              acc[curr] = 1;
-            }
-            return acc;
-          }, {}),
-        );
+        const relatedTopicsCount = allRelatedTopics.reduce((acc, curr) => {
+          if (curr in acc) {
+            acc[curr] += 1;
+          } else {
+            acc[curr] = 1;
+          }
+          return acc;
+        }, {});
 
+        const sortedAllRelatedTopics = Object.entries(relatedTopicsCount).sort(
+          (a, b) => b[1] - a[1],
+        );
+        show(sortedAllRelatedTopics);
         /* Query on shallow
         const allInterests = ctx.db.getAllSync(
           `SELECT
