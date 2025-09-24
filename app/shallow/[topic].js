@@ -96,6 +96,8 @@ export default function Shallow() {
 
   const { topic } = useLocalSearchParams();
 
+  ctx.setTopic(topic);
+
   const searchTopic = async (topic) => {
     const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url, {

@@ -18,6 +18,9 @@ export default function Layout() {
   const [status, setStatus] = useState(JSON.stringify({ action: "loading" }));
   const [search, setSearch] = useState("");
 
+  const [topic, setTopic] = useState("");
+  const [disciple, setDisciple] = useState("juampi.gnr@gmail.com");
+
   const typeHandler = (change) => {
     clearTimeout(timeoutId.current);
     timeoutId.current = setTimeout(() => {
@@ -50,6 +53,17 @@ export default function Layout() {
         chain VARCHAR(64) NOT NULL,
         FOREIGN KEY (disciple_email) REFERENCES disciple(email)
       );
+
+      CREATE TABLE IF NOT EXISTS mentor (
+        id VARCHAR(64) PRIMARY KEY,
+        disciple_email VARCHAR(100) NOT NULL,
+        chain_id VARCHAR(64) NOT NULL,
+        name VARCHAR(64) NOT NULL,
+        spent INT NOT NULL DEFAULT 0,
+        FOREIGN KEY (disciple_email) REFERENCES disciple(email)
+        FOREIGN KEY (chain_id) REFERENCES chain(id)
+
+      );
     `,
     );
 
@@ -81,6 +95,10 @@ export default function Layout() {
         setStatus: setStatus,
         search: search,
         setSearch: setSearch,
+        topic: topic,
+        setTopic: setTopic,
+        disciple: disciple,
+        setDisciple: setDisciple,
       }}
     >
       <View style={css.body}>

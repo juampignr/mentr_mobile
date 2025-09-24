@@ -112,76 +112,7 @@ export default function Medium() {
         const allInterests = ctx.db.getAllSync(
           `SELECT chain,name,spent FROM interest WHERE disciple_email = 'juampi.gnr@gmail.com'`,
         );
-        const orderedInterests = Object.values(
-          ctx.db.getAllSync(
-            `SELECT name, chain, spent
-          FROM
-            interest
-          WHERE
-            disciple_email = 'juampi.gnr@gmail.com' AND chain = '${firstTopic}'
-          ORDER BY
-            chain, spent DESC;
-          GROUP BY chain;
-          `,
-          ),
-        );
 
-        const allRelatedTopics = [];
-
-        for (let [i, n] = [0, orderedInterests.length]; i < n; i++) {
-          if (i < 10) {
-            const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(orderedInterests[i].name)}&prop=categories|links|linkshere&cllimit=50&pllimit=50&lhlimit=50&format=json&origin=*`;
-            const response = await fetch(url, {
-              headers: {
-                "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
-              },
-            });
-
-            let linksResults = (await response.json()).query.pages;
-
-            linksResults = Object.values(linksResults);
-            const excludePatterns = [
-              /All/,
-              /Articles/,
-              /Wikipedia/,
-              /CS1/,
-              /stub/i,
-              /weasel/i,
-              /unsourced/i,
-              /cleanup/i,
-            ];
-
-            for (const page of linksResults) {
-              page.links.map((category) => {
-                if (!excludePatterns.some((p) => p.test(category.title)))
-                  allRelatedTopics.push(
-                    category.title.replace("Category:", ""),
-                  );
-              });
-
-              page.linkshere.map((category) => {
-                if (!excludePatterns.some((p) => p.test(category.title)))
-                  allRelatedTopics.push(
-                    category.title.replace("Category:", ""),
-                  );
-              });
-            }
-          }
-        }
-
-        const relatedTopicsCount = allRelatedTopics.reduce((acc, curr) => {
-          if (curr in acc) {
-            acc[curr] += 1;
-          } else {
-            acc[curr] = 1;
-          }
-          return acc;
-        }, {});
-
-        const sortedAllRelatedTopics = Object.entries(relatedTopicsCount).sort(
-          (a, b) => b[1] - a[1],
-        );
-        show(sortedAllRelatedTopics);
         /* Query on shallow
         const allInterests = ctx.db.getAllSync(
           `SELECT
