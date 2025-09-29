@@ -54,7 +54,6 @@ const css = {
     textAlignVertical: "center", // Android only
     includeFontPadding: false, // Android only
   },
-
   card: {
     width: "95%",
     borderTopLeftRadius: 0,

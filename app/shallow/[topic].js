@@ -11,8 +11,6 @@ import PagerView from "react-native-pager-view";
 import chalk from "chalk";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Spinner from "../../components/Spinner";
-import { all } from "axios";
-import { I18nManager } from "react-native";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -219,7 +217,7 @@ export default function Shallow() {
     setPaginate(1);
   };
 
-  useAsyncEffect(async () => {
+  const initialize = async () => {
     const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(topic)}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
@@ -328,7 +326,9 @@ export default function Shallow() {
 
     setCardsMatrix({ 0: combinedAllData });
     currentPosition.current = 1;
-  }, []);
+  };
+
+  useAsyncEffect(initialize, []);
 
   useAsyncEffect(async () => {
     let viewsArray = [];
@@ -409,6 +409,17 @@ export default function Shallow() {
       setPaginate(0);
     }
   }, [paginate, momentum]);
+
+  useEffect(() => {
+    if (ctx.status === "loading") {
+      setIsLoading(true);
+    }
+
+    if (ctx.status === "mentoring") {
+      setCardsMatrix({ 0: ctx.computedInterests });
+      currentPosition.current = 1;
+    }
+  }, [ctx.status]);
 
   return (
     (isLoading && <Spinner />) || (

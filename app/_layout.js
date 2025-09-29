@@ -21,6 +21,8 @@ export default function Layout() {
   const [topic, setTopic] = useState("");
   const [disciple, setDisciple] = useState("juampi.gnr@gmail.com");
 
+  const [interestChain, setInterestChain] = useState({});
+
   const typeHandler = (change) => {
     clearTimeout(timeoutId.current);
     timeoutId.current = setTimeout(() => {
@@ -99,6 +101,8 @@ export default function Layout() {
         setTopic: setTopic,
         disciple: disciple,
         setDisciple: setDisciple,
+        interestChain: interestChain,
+        setInterestChain: setInterestChain,
       }}
     >
       <View style={css.body}>

@@ -3,6 +3,25 @@ export default class RNWiki {
     this.fetch = fetch;
   }
 
+  async getRawPage(query) {
+    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(query)}&format=json&origin=*`;
+    const topicResponse = await fetch(topicURL, {
+      headers: {
+        "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+      },
+    });
+
+    let topicData = await topicResponse.json();
+    topicData = Object.values(topicData.query.pages)[0];
+
+    return {
+      [topicData.pageid.toString()]: {
+        title: topicData.title,
+        summary: topicData.extract,
+      },
+    };
+  }
+
   async getPage(query) {
     const excludedSections = [
       "See also",

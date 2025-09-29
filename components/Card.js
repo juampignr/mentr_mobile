@@ -56,7 +56,7 @@ export default function Card({ children, firstTopic }) {
     };
   });
 
-  const pressHandler = () => {
+  const pressHandler = async () => {
     scaleAnim.value = scaleAnim.value === 1 ? 1.025 : 1;
     colorProgress.value = colorProgress.value === 0 ? 1 : 0;
     radiusLeftProgress.value = radiusLeftProgress.value === 0 ? 20 : 0;
@@ -65,9 +65,16 @@ export default function Card({ children, firstTopic }) {
     //setCardStyle(css.cardPlus);
     setCardTitleStyle(css.cardTitlePlus);
 
+    setTimeout(() => {
+      ctx.setStatus("loading");
+    }, 2000);
+
     const gandalf = new Mentor(firstTopic, ctx.db, ctx.disciple);
 
-    gandalf.go();
+    const result = await gandalf.go();
+
+    ctx.setStatus("mentoring");
+    ctx.setInterestChain(result);
   };
 
   return (
