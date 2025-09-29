@@ -71,11 +71,20 @@ const css = {
     shadowRadius: 3,
     marginTop: 10,
   },
+
   cardTitle: {
     fontFamily: "Corben_400Regular",
     fontSize: 16,
     textAlign: "center",
     color: "#b147ff99",
+    marginBottom: 10,
+    lineHeight: 25,
+  },
+  cardTitlePlus: {
+    fontFamily: "Corben_400Regular",
+    fontSize: 16,
+    textAlign: "center",
+    color: "#ffa020aa",
     marginBottom: 10,
     lineHeight: 25,
   },

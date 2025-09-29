@@ -4,26 +4,79 @@ import { View, Text, Pressable } from "react-native";
 import { useAsyncEffect } from "@react-hook/async";
 import { Context } from "../app/_layout.js";
 import { Link } from "expo-router";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  interpolateColor,
+  Easing,
+} from "react-native-reanimated";
 import Mentor from "../libraries/mentor";
 
 export default function Card({ children, firstTopic }) {
   const ctx = useContext(Context);
 
   const [topic, setTopic] = useState(children?.item);
+  const [cardStyle, setCardStyle] = useState(css.card);
+  const [cardTitleStyle, setCardTitleStyle] = useState(css.cardTitle);
 
-  const pressHandler = (db = None) => {
+  const scaleAnim = useSharedValue(1);
+  const colorProgress = useSharedValue(0);
+  const radiusLeftProgress = useSharedValue(0);
+  const radiusRightProgress = useSharedValue(0);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          scaleY: withTiming(scaleAnim.value, {
+            duration: 300,
+            easing: Easing.out(Easing.quad),
+          }),
+        },
+        {
+          scaleX: withTiming(scaleAnim.value, {
+            duration: 300,
+            easing: Easing.out(Easing.quad),
+          }),
+        },
+      ],
+      borderTopLeftRadius: withTiming(radiusLeftProgress.value, {
+        duration: 300,
+      }),
+
+      borderTopRightRadius: withTiming(radiusRightProgress.value, {
+        duration: 300,
+      }),
+      borderColor: interpolateColor(
+        colorProgress.value,
+        [0, 1],
+        ["#b147ff22", "#ffa020aa"],
+      ),
+    };
+  });
+
+  const pressHandler = () => {
+    scaleAnim.value = scaleAnim.value === 1 ? 1.025 : 1;
+    colorProgress.value = colorProgress.value === 0 ? 1 : 0;
+    radiusLeftProgress.value = radiusLeftProgress.value === 0 ? 20 : 0;
+    radiusRightProgress.value = radiusRightProgress.value === 0 ? 20 : 0;
+
+    //setCardStyle(css.cardPlus);
+    setCardTitleStyle(css.cardTitlePlus);
+
     const gandalf = new Mentor(firstTopic, ctx.db, ctx.disciple);
 
     gandalf.go();
   };
 
   return (
-    <View style={css.card}>
+    <Animated.View style={[cardStyle, animatedStyle]}>
       <Link
         href={`/medium/${encodeURI(firstTopic)}:${encodeURI(topic?.title)}`}
         asChild
       >
-        <Text style={css.cardTitle}>{topic?.title}</Text>
+        <Text style={cardTitleStyle}>{topic?.title}</Text>
       </Link>
 
       <Link
@@ -34,6 +87,6 @@ export default function Card({ children, firstTopic }) {
           <Text style={css.cardSummary}>{topic?.summary}</Text>
         </Pressable>
       </Link>
-    </View>
+    </Animated.View>
   );
 }
