@@ -11,6 +11,7 @@ import PagerView from "react-native-pager-view";
 import chalk from "chalk";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Spinner from "../../components/Spinner";
+import { all } from "axios";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -416,8 +417,17 @@ export default function Shallow() {
     }
 
     if (ctx.status === "mentoring") {
-      setCardsMatrix({ 0: ctx.computedInterests });
+      let allInterests = [];
+      for (const key in ctx.interestChain) {
+        allInterests.push({
+          id: key,
+          title: ctx.interestChain[key].title,
+          summary: ctx.interestChain[key].summary,
+        });
+      }
+      setCardsMatrix({ 0: allInterests });
       currentPosition.current = 1;
+      setIsLoading(false);
     }
   }, [ctx.status]);
 

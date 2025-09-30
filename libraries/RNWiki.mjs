@@ -1,10 +1,18 @@
+const _ = (prop) => Symbol.for(prop);
+
 export default class RNWiki {
   constructor() {
     this.fetch = fetch;
   }
 
-  async getRawPage(query) {
-    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(query)}&format=json&origin=*`;
+  async [_("getJSONPage")](query) {
+    let page = query;
+
+    if (Array.isArray(query)) {
+      page = query.join("|");
+    }
+
+    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -12,14 +20,37 @@ export default class RNWiki {
     });
 
     let topicData = await topicResponse.json();
-    topicData = Object.values(topicData.query.pages)[0];
+    let result;
 
-    return {
-      [topicData.pageid.toString()]: {
-        title: topicData.title,
-        summary: topicData.extract,
-      },
-    };
+    if (Array.isArray(topicData.query.pages)) {
+      const element = Object.values(topicData.query.pages)[0];
+
+      result = {
+        [element.pageid]: {
+          title: element.title,
+          summary: element.extract,
+        },
+      };
+    } else {
+      for (const element of Object.values(topicData.query.pages)) {
+        console.log(element);
+        result = {
+          ...result,
+          [element.pageid]: {
+            title: element.title,
+            summary: element.extract,
+          },
+        };
+      }
+    }
+
+    console.log(result);
+
+    return result;
+  }
+
+  async getJSONPage(query) {
+    return await this[_("getJSONPage")](query);
   }
 
   async getPage(query) {
