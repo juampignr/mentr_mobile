@@ -88,6 +88,7 @@ export default function Medium() {
 
   const [sections, setSections] = useState([]);
   const [summary, setSummary] = useState("");
+  const clickedSections = useRef(new Set());
 
   const startTimeRef = useRef(null);
 
@@ -132,13 +133,22 @@ export default function Medium() {
         );
         */
 
+        show(timeSpent);
+        show(
+          parseInt(
+            timeSpent *
+              (ctx.clickedSections.current.size / ctx.allSections.current),
+          ),
+        );
+        
+        const estimatedSpent = timeSpent * (ctx.clickedSections.current.size / ctx.allSections.current);
         if (selectResult) {
           const insertResult = ctx.db.runSync(
-            `UPDATE interest SET spent = spent + ${timeSpent} WHERE id = '${selectResult.id}'`,
+            `UPDATE interest SET spent = spent + ${estimatedSpent} WHERE id = '${selectResult.id}'`,
           );
         } else {
           const insertResult = ctx.db.runSync(
-            `INSERT OR IGNORE INTO interest (id,disciple_email,name,spent,chain) VALUES ('${randomUUID()}', 'juampi.gnr@gmail.com', '${topic}', ${timeSpent}, '${firstTopic}')`,
+            `INSERT OR IGNORE INTO interest (id,disciple_email,name,spent,chain) VALUES ('${randomUUID()}', 'juampi.gnr@gmail.com', '${topic}', ${estimatedSpent}, '${firstTopic}')`,
           );
         }
       };
@@ -152,6 +162,9 @@ export default function Medium() {
     const result = await wiki.getPage(topic);
 
     setSummary(!isSectionRegex.test(result[0]) ? result[0] : result[1]);
+
+    ctx.clickedSections.current = new Set();
+    ctx.allSections.current = 1;
 
     for (let i = 0, n = result.length; i < n; i++) {
       const part = result[i];
@@ -175,8 +188,11 @@ export default function Medium() {
           ...prevSections,
           <Section>{sectionObject}</Section>,
         ]);
+        ctx.allSections.current += 1;
       }
     }
+
+    show(ctx.allSections.current);
   }, []);
 
   return (

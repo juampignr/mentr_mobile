@@ -23,6 +23,9 @@ export default function Layout() {
 
   const [interestChain, setInterestChain] = useState({});
 
+  const clickedSections = useRef(new Set());
+  const allSections = useRef(1);
+
   const typeHandler = (change) => {
     clearTimeout(timeoutId.current);
     timeoutId.current = setTimeout(() => {
@@ -103,6 +106,8 @@ export default function Layout() {
         setDisciple: setDisciple,
         interestChain: interestChain,
         setInterestChain: setInterestChain,
+        clickedSections: clickedSections,
+        allSections: allSections,
       }}
     >
       <View style={css.body}>

@@ -21,6 +21,7 @@ export default function Section({ children }) {
       setVisibility(css.invisible);
     } else {
       setVisibility(css.visible);
+      ctx.clickedSections.current.add(sectionTitle.current);
     }
   }, [isCollapsed]);
 
