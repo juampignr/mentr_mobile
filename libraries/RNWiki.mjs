@@ -62,6 +62,7 @@ export default class RNWiki {
       "Explanatory notes",
     ];
     const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&titles=${encodeURIComponent(query)}&prop=extracts&explaintext`;
+
     let response = await (
       await fetch(url, {
         headers: {
@@ -70,9 +71,10 @@ export default class RNWiki {
       })
     ).json();
 
+    console.log(response);
+
     response = Object.values(response.query.pages)[0];
     response = response.extract;
-    //show(response);
 
     response = response.split(/[=]{1,2}\s*[a-zA-Z]*\s*[=]{1,2}/gm);
 
@@ -110,7 +112,27 @@ export default class RNWiki {
         ) {
           parsedResponse.pop();
         } else {
-          parsedResponse.push(part.replace(/\n/g, "\n\n").trimEnd());
+          const formulaPart = part.replace(/\n/g, "").replace(/\s{2,}/g, "  ");
+
+          const formulaRegex = /displaystyle([\s\S]*?)\s{2}/g;
+          const formulasMatch = [];
+
+          let match;
+
+          while ((match = formulaRegex.exec(formulaPart)) !== null) {
+            formulasMatch.push(match[1].trim());
+          }
+
+          if (formulasMatch.length) {
+            console.log(formulaPart);
+            console.log(formulasMatch);
+          }
+
+          console.log("\n\n");
+
+          const trimmedPart = part.replace(/\n/g, "\n\n").trimEnd();
+
+          parsedResponse.push(trimmedPart);
         }
 
         lastPartType = "content";
