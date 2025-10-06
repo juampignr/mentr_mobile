@@ -114,7 +114,9 @@ export default class RNWiki {
         } else {
           const formulaPart = part.replace(/\n/g, "").replace(/\s{2,}/g, "  ");
 
-          const formulaRegex = /displaystyle([\s\S]*?)\s{2}/g;
+          //const formulaRegex = /displaystyle([\s\S]*?)\s{2}/g;
+          const formulaRegex = /\{([\s\S]*?)\}/g;
+
           const formulasMatch = [];
 
           let match;
@@ -130,8 +132,11 @@ export default class RNWiki {
 
           console.log("\n\n");
 
-          const trimmedPart = part.replace(/\n/g, "\n\n").trimEnd();
+          let trimmedPart = part.replace(/\n/g, "\n\n").trimEnd();
 
+          trimmedPart = trimmedPart.replace(formulaRegex, (match, group1) => {
+            return `<formula>${group1}</formula>`;
+          });
           parsedResponse.push(trimmedPart);
         }
 

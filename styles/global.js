@@ -174,6 +174,13 @@ const css = {
     color: "#334f6a",
     lineHeight: 30,
   },
+  loadingTitle: {
+    fontFamily: "Corben_400Regular",
+    fontSize: 24,
+    textAlign: "center",
+    color: "#b147ff99",
+    marginTop: 10,
+  },
   spinnerLoading: {
     justifyContent: "center",
     alignItems: "center",

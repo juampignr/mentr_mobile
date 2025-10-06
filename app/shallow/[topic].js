@@ -11,7 +11,6 @@ import PagerView from "react-native-pager-view";
 import chalk from "chalk";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Spinner from "../../components/Spinner";
-import { all } from "axios";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -88,6 +87,8 @@ export default function Shallow() {
 
   const [pageNumber, setPageNumber] = useState(-1);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingText, setLoadingText] = useState(false);
+
   const [swipeableView, setSwipeableView] = useState([]);
   const [paginate, setPaginate] = useState(0);
   const [momentum, setMomentum] = useState(0);
@@ -414,9 +415,11 @@ export default function Shallow() {
   useEffect(() => {
     if (ctx.status === "loading") {
       setIsLoading(true);
+      setLoadingText(ctx.loadingText);
     }
 
     if (ctx.status === "mentoring") {
+      setLoadingText("Showing the way...");
       let allInterests = [];
       for (const key in ctx.interestChain) {
         allInterests.push({
@@ -432,7 +435,7 @@ export default function Shallow() {
   }, [ctx.status]);
 
   return (
-    (isLoading && <Spinner />) || (
+    (isLoading && <Spinner text={ctx.loadingText} />) || (
       <PagerView
         style={css.swipeableView}
         initialPage={0}

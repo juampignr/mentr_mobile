@@ -17,6 +17,7 @@ export default function Layout() {
   const [chain, setChain] = useState({});
   const [status, setStatus] = useState(JSON.stringify({ action: "loading" }));
   const [search, setSearch] = useState("");
+  const [loadingText, setLoadingText] = useState(false);
 
   const [topic, setTopic] = useState("");
   const [disciple, setDisciple] = useState("juampi.gnr@gmail.com");
@@ -108,6 +109,8 @@ export default function Layout() {
         setInterestChain: setInterestChain,
         clickedSections: clickedSections,
         allSections: allSections,
+        loadingText: loadingText,
+        setLoadingText: setLoadingText,
       }}
     >
       <View style={css.body}>

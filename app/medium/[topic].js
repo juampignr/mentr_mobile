@@ -16,7 +16,6 @@ import css from "../../styles/global.js";
 import chalk from "chalk";
 import Section from "../../components/Section.js";
 import RNWiki from "../../libraries/RNWiki.mjs";
-import { all } from "axios";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -140,8 +139,10 @@ export default function Medium() {
               (ctx.clickedSections.current.size / ctx.allSections.current),
           ),
         );
-        
-        const estimatedSpent = timeSpent * (ctx.clickedSections.current.size / ctx.allSections.current);
+
+        const estimatedSpent =
+          timeSpent *
+          (ctx.clickedSections.current.size / ctx.allSections.current);
         if (selectResult) {
           const insertResult = ctx.db.runSync(
             `UPDATE interest SET spent = spent + ${estimatedSpent} WHERE id = '${selectResult.id}'`,

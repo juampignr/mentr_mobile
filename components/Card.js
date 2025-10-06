@@ -11,6 +11,8 @@ import Animated, {
   interpolateColor,
   Easing,
 } from "react-native-reanimated";
+import { BlurView } from "expo-blur";
+
 import Mentor from "../libraries/mentor";
 
 export default function Card({ children, firstTopic }) {
@@ -67,6 +69,7 @@ export default function Card({ children, firstTopic }) {
 
     setTimeout(() => {
       ctx.setStatus("loading");
+      ctx.setLoadingText("Guiding you...");
     }, 2000);
 
     const gandalf = new Mentor(firstTopic, ctx.db, ctx.disciple);
@@ -74,6 +77,8 @@ export default function Card({ children, firstTopic }) {
     const result = await gandalf.go();
 
     ctx.setStatus("mentoring");
+    ctx.setLoadingText(false);
+
     ctx.setInterestChain(result);
   };
 

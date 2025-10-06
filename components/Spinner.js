@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import Animated, {
   useSharedValue,
   withRepeat,
@@ -7,9 +7,14 @@ import Animated, {
   useAnimatedStyle,
   Easing,
 } from "react-native-reanimated";
+import css from "../styles/global.js";
 import AntDesign from "react-native-vector-icons/AntDesign";
 
-export default function Spinner({ size = 60, color = "#b147ff99" }) {
+export default function Spinner({
+  size = 60,
+  color = "#b147ff99",
+  text = false,
+}) {
   const rotation = useSharedValue(0);
 
   useEffect(() => {
@@ -31,6 +36,7 @@ export default function Spinner({ size = 60, color = "#b147ff99" }) {
       <Animated.View style={animatedStyle}>
         <AntDesign name="loading" size={size} color={color} />
       </Animated.View>
+      {text && <Text style={css.loadingTitle}>{text}</Text>}
     </View>
   );
 }

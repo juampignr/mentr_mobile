@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import { useAsyncEffect } from "@react-hook/async";
 import { Link } from "expo-router";
 import { Context } from "./_layout.js";
+import { WebView } from "react-native-webview";
 import PillsView from "../components/PillsView";
 import Pill from "../components/Pill";
 import chalk from "chalk";
