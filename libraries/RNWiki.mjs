@@ -33,7 +33,6 @@ export default class RNWiki {
       };
     } else {
       for (const element of Object.values(topicData.query.pages)) {
-        console.log(element);
         result = {
           ...result,
           [element.pageid]: {
@@ -43,8 +42,6 @@ export default class RNWiki {
         };
       }
     }
-
-    console.log(result);
 
     return result;
   }
@@ -70,8 +67,6 @@ export default class RNWiki {
         },
       })
     ).json();
-
-    console.log(response);
 
     response = Object.values(response.query.pages)[0];
     response = response.extract;
@@ -114,36 +109,46 @@ export default class RNWiki {
         } else {
           const formulaPart = part.replace(/\n/g, "").replace(/\s{2,}/g, "  ");
 
-          //const formulaRegex = /displaystyle([\s\S]*?)\s{2}/g;
-          const formulaRegex = /\{([\s\S]*?)\}/g;
+          //console.log(formulaPart);
+          const formulaRegex = /[\{]*\\displaystyle([\s\S]*?)[\}]*\s{2}/g;
+          const alignedRegex = /\{\\begin\{aligned\}([\s\S]*?)\\end\{aligned/g;
 
+          //const formulaRegex = /\{([\s\S]*?)\}/g;
           const formulasMatch = [];
 
           let match;
+          let parsedFormulaPart;
 
           while ((match = formulaRegex.exec(formulaPart)) !== null) {
             formulasMatch.push(match[1].trim());
           }
 
-          if (formulasMatch.length) {
-            console.log(formulaPart);
-            console.log(formulasMatch);
+          if (formulaRegex.test(formulaPart)) {
+            parsedFormulaPart = formulaPart.replace(
+              formulaRegex,
+              (_, inner) => {
+                // Check if inner contains \begin{aligned}
+                if (inner.includes("\\begin{aligned}")) {
+                  return inner.replace(alignedRegex, (_, content) => {
+                    return ` $$\\begin{aligned}${content}\\end{aligned}$$ `;
+                  });
+                }
+                // fallback for other \displaystyle formulas
+                return ` $${inner}$ `;
+              },
+            );
+          } else {
+            parsedFormulaPart = formulaPart;
           }
 
-          console.log("\n\n");
-
-          let trimmedPart = part.replace(/\n/g, "\n\n").trimEnd();
-
-          trimmedPart = trimmedPart.replace(formulaRegex, (match, group1) => {
-            return `<formula>${group1}</formula>`;
-          });
-          parsedResponse.push(trimmedPart);
+          parsedResponse.push(parsedFormulaPart);
         }
 
         lastPartType = "content";
       }
     }
 
+    console.log(parsedResponse);
     return parsedResponse;
   }
 }
