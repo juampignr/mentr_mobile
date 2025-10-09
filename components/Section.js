@@ -5,10 +5,25 @@ import { Context } from "../app/_layout.js";
 import { Link } from "expo-router";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { WebView } from "react-native-webview";
+import katex from "katex";
 import css from "../styles/global.js";
 
 export default function Section({ children }) {
   const ctx = useContext(Context);
+
+  const newTemplate = (content) => `
+  <body>
+
+
+    <!-- Optional custom classes -->
+    <style>
+      .corben-regular { font-family:"Corben", serif; font-weight:400; font-style:normal; }
+      .corben-bold { font-family:"Corben", serif; font-weight:700; font-style:normal; }
+    </style>
+
+    ${content}
+  </body>
+  `;
 
   const template = (content) => `
   <html>
@@ -72,7 +87,6 @@ export default function Section({ children }) {
   }, [isCollapsed]);
 
   //<Text style={css.sectionContent}>{sectionContent.current}</Text>
-  console.log(templateOneLiner(sectionContent.current));
   return (
     <>
       <TouchableOpacity onPress={() => setIsCollapsed(!isCollapsed)}>
@@ -92,9 +106,13 @@ export default function Section({ children }) {
       <WebView
         originWhitelist={["*"]}
         source={{
-          html: templateOneLiner(sectionContent.current).replace(/\n*/g, " "),
+          html: newTemplate(
+            "<body><p style='font-family:\"Corben\", serif; font-weight:400; font-style:normal; font-size:20px; text-align: left; color: #334f6a;'>" +
+              sectionContent.current +
+              "</p></body>",
+          ),
         }}
-        style={{ height: 100 }} // always give some initial height
+        style={{ flex: 1, height: 100 }} // always give some initial height
       />
     </>
   );

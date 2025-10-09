@@ -160,9 +160,11 @@ export default function Medium() {
   useAsyncEffect(async () => {
     const wiki = new RNWiki();
     const isSectionRegex = /\<.*\>/g;
+    const sectionRegex = /\<Section\>([\s\S]*?)\<\/Section\>/g;
 
     const result = await wiki.getPage(topic);
 
+    console.log(result.length);
     setSummary(!isSectionRegex.test(result[0]) ? result[0] : result[1]);
 
     ctx.clickedSections.current = new Set();
@@ -172,16 +174,22 @@ export default function Medium() {
       const part = result[i];
       //Best effort to discover the section's content
 
-      const isSection = isSectionRegex.test(part);
+      const isSection = sectionRegex.test(part);
+
       const nextPart = result[i + 1] ?? "";
 
       if (isSection) {
-        const title = part.replace(/[<>]/g, "");
-        const subtitle = title.split(":").length > 1 ? title.split(":")[1] : "";
+        console.log(sectionRegex.exec(part));
+        const match = sectionRegex.exec(part);
+        const title = Array.isArray(match) ? match[1] : "";
+        const subtitle = title;
+
+        console.log(title);
+
         const content = nextPart;
 
         const sectionObject = {
-          title: title.replace(/:/g, ""),
+          title: title,
           subtitle: subtitle,
           content: content,
         };

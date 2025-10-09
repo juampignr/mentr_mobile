@@ -1,3 +1,7 @@
+import katex from "katex";
+import "katex/dist/katex.min.css";
+import css from "../styles/global.js";
+
 const _ = (prop) => Symbol.for(prop);
 
 export default class RNWiki {
@@ -91,12 +95,14 @@ export default class RNWiki {
 
       if (/^\s{1,2}.{3,100}$/g.test(part)) {
         if (lastPartType === "content") {
-          parsedResponse.push(`<${part.trim()}>`);
+          parsedResponse.push(`<Section>${part.trim()}</Section>`);
           lastPartType = "section";
         } else {
           parsedResponse.pop();
 
-          parsedResponse.push(`<${lastSection.trim()}>:<${part.trim()}>`);
+          parsedResponse.push(
+            `<Section>${lastSection.trim()}</Section>:<Section>${part.trim()}</Section>`,
+          );
 
           lastPartType = "section";
         }
@@ -127,14 +133,28 @@ export default class RNWiki {
             parsedFormulaPart = formulaPart.replace(
               formulaRegex,
               (_, inner) => {
-                // Check if inner contains \begin{aligned}
                 if (inner.includes("\\begin{aligned}")) {
                   return inner.replace(alignedRegex, (_, content) => {
-                    return ` $$\\begin{aligned}${content}\\end{aligned}$$ `;
+                    try {
+                      return katex.renderToString(
+                        `\\begin{aligned}${content}\\end{aligned}`,
+                        {
+                          displayMode: false,
+                        },
+                      );
+                    } catch (error) {
+                      console.log(error);
+                    }
                   });
                 }
-                // fallback for other \displaystyle formulas
-                return ` $${inner}$ `;
+
+                try {
+                  return katex.renderToString(`${inner}`, {
+                    displayMode: false,
+                  });
+                } catch (error) {
+                  console.log(error);
+                }
               },
             );
           } else {
@@ -148,7 +168,7 @@ export default class RNWiki {
       }
     }
 
-    console.log(parsedResponse);
+    //console.log(parsedResponse);
     return parsedResponse;
   }
 }
