@@ -12,63 +12,12 @@ export default function Section({ children }) {
   const ctx = useContext(Context);
 
   const newTemplate = (content) => `
-  <body>
-
-
-    <!-- Optional custom classes -->
-    <style>
-      .corben-regular { font-family:"Corben", serif; font-weight:400; font-style:normal; }
-      .corben-bold { font-family:"Corben", serif; font-weight:700; font-style:normal; }
-    </style>
-
-    ${content}
+  <body style="display: flex; margin-top: 40px;">
+    <p id="content" style='font-family:\"Corben\", serif; font-weight:400; font-style:normal; font-size:40px; text-align: left; color: #334f6a;'>
+        ${content}
+    </p>
   </body>
   `;
-
-  const template = (content) => `
-  <html>
-    <head>
-      <meta charset="utf-8">
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> <link href="https://fonts.googleapis.com/css2?family=Corben:wght@400;700&display=swap" rel="stylesheet">
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-      <script>
-        document.addEventListener("DOMContentLoaded", function() {
-          renderMathInElement(document.body, {
-            delimiters: [
-              {left: "$$", right: "$$", display: true},
-              {left: "$", right: "$", display: false}
-            ]
-          });
-        });
-      </script>
-      <style>
-        body {
-          font-family: -apple-system, Roboto, sans-serif;
-          padding: 8px;
-          color: #fff;
-          background-color: transparent;
-        }
-	  .corben-regular {
-		font-family: "Corben", serif;
-		font-weight: 400; font-style: normal;
-	  }
-	  .corben-bold {
-	  font-family: "Corben", serif;
-	  font-weight: 700;
-	  font-style: normal;
-	  }
-      </style>
-    </head>
-    <body>${content}</body>
-  </html>`;
-
-  const templateOneLiner = (content) =>
-    '<html><head><meta charset="utf-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Corben:wght@400;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script><script>document.addEventListener("DOMContentLoaded",function(){renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}]});});</script><style>body{font-family:-apple-system, Roboto, sans-serif;padding:8px;color:#fff;background-color:transparent}.corben-regular{font-family:"Corben", serif;font-weight:400;font-style:normal}.corben-bold{font-family:"Corben", serif;font-weight:700;font-style:normal}</style></head><body>' +
-    content +
-    "</body></html>";
 
   const sectionTitle = useRef(children?.title);
   const sectionSubtitle = useRef(children?.subtitle);
@@ -76,23 +25,42 @@ export default function Section({ children }) {
 
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [visibility, setVisibility] = useState(css.visible);
+  const [iconToggle, setIconToggle] = useState(0);
 
+  const [sectionHeight, setSectionHeight] = useState(100);
+
+  let webViewScript = `
+      const element = document.querySelector('body');
+      window.ReactNativeWebView.postMessage(""+element.getBoundingClientRect().height);
+  `;
+
+  console.log(newTemplate(sectionContent.current.trim()));
   useAsyncEffect(async () => {
     if (isCollapsed) {
+      setIconToggle(0);
       setVisibility(css.invisible);
     } else {
+      setIconToggle(1);
+
       setVisibility(css.visible);
       ctx.clickedSections.current.add(sectionTitle.current);
     }
   }, [isCollapsed]);
 
-  //<Text style={css.sectionContent}>{sectionContent.current}</Text>
   return (
     <>
       <TouchableOpacity onPress={() => setIsCollapsed(!isCollapsed)}>
         <View style={css.section}>
           <Text style={css.sectionTitle}>{sectionTitle.current}</Text>
-          <FontAwesome6 style={css.sectionIcon} name="chevron-up" size={25} />
+          {iconToggle === 0 ? (
+            <FontAwesome6
+              style={css.sectionIcon}
+              name="chevron-down"
+              size={25}
+            />
+          ) : (
+            <FontAwesome6 style={css.sectionIcon} name="chevron-up" size={25} />
+          )}
         </View>
       </TouchableOpacity>
       <TouchableOpacity
@@ -104,15 +72,17 @@ export default function Section({ children }) {
         )}
       </TouchableOpacity>
       <WebView
-        originWhitelist={["*"]}
+        style={{ height: sectionHeight, ...visibility }}
         source={{
-          html: newTemplate(
-            "<body><p style='font-family:\"Corben\", serif; font-weight:400; font-style:normal; font-size:20px; text-align: left; color: #334f6a;'>" +
-              sectionContent.current +
-              "</p></body>",
-          ),
+          html: newTemplate(sectionContent.current.trim()),
         }}
-        style={{ flex: 1, height: 100 }} // always give some initial height
+        originWhitelist={["*"]}
+        onMessage={(event) => {
+          alert(event?.nativeEvent?.data);
+          setSectionHeight(parseInt(event.nativeEvent.data));
+        }}
+        injectedJavaScript={webViewScript}
+        scrollEnabled={false}
       />
     </>
   );
