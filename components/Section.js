@@ -12,8 +12,8 @@ export default function Section({ children }) {
   const ctx = useContext(Context);
 
   const newTemplate = (content) => `
-  <body style="display: flex; margin-top: 40px;">
-    <p id="content" style='font-family:\"Corben\", serif; font-weight:400; font-style:normal; font-size:40px; text-align: left; color: #334f6a;'>
+  <body style="margin: 0; padding: 0; border: 0">
+    <p id="content" style='font-family:\"Corben\", serif; font-weight:400; font-style:normal; font-size:40px; text-align: left; color: #334f6a; margin: 0; padding: 0'>
         ${content}
     </p>
   </body>
@@ -30,8 +30,15 @@ export default function Section({ children }) {
   const [sectionHeight, setSectionHeight] = useState(100);
 
   let webViewScript = `
-      const element = document.querySelector('body');
-      window.ReactNativeWebView.postMessage(""+element.getBoundingClientRect().height);
+        setTimeout(() => {
+
+          const paragraph = document.querySelector('#content');
+
+          const rect = paragraph.getBoundingClientRect();
+          const height = Math.round(rect.height / 2);
+
+          window.ReactNativeWebView.postMessage(""+height);
+        }, 300);
   `;
 
   console.log(newTemplate(sectionContent.current.trim()));
@@ -74,7 +81,7 @@ export default function Section({ children }) {
       <WebView
         style={{ height: sectionHeight, ...visibility }}
         source={{
-          html: newTemplate(sectionContent.current.trim()),
+          html: newTemplate(sectionContent.current),
         }}
         originWhitelist={["*"]}
         onMessage={(event) => {
@@ -82,7 +89,6 @@ export default function Section({ children }) {
           setSectionHeight(parseInt(event.nativeEvent.data));
         }}
         injectedJavaScript={webViewScript}
-        scrollEnabled={false}
       />
     </>
   );
