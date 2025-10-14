@@ -159,32 +159,34 @@ export default function Medium() {
 
   useAsyncEffect(async () => {
     const wiki = new RNWiki();
-    const isSectionRegex = /\<.*\>/g;
-    const sectionRegex = /\<Section\>([\s\S]*?)\<\/Section\>/g;
+
+    const parseJSON = (jsonString) => {
+      try {
+        return JSON.parse(jsonString);
+      } catch (error) {
+        return null;
+      }
+    };
 
     const result = await wiki.getPage(topic);
 
-    console.log(result.length);
-    setSummary(!isSectionRegex.test(result[0]) ? result[0] : result[1]);
+    setSummary(!result[0]?.section ? result[0] : result[1]);
 
     ctx.clickedSections.current = new Set();
     ctx.allSections.current = 1;
 
     for (let i = 0, n = result.length; i < n; i++) {
       const part = result[i];
-      //Best effort to discover the section's content
+      const parsedSection = part?.section;
+      const parsedSubsection = part?.subsection;
 
-      const isSection = sectionRegex.test(part);
+      console.log(parsedSection);
 
       const nextPart = result[i + 1] ?? "";
 
-      if (isSection) {
-        console.log(sectionRegex.exec(part));
-        const match = sectionRegex.exec(part);
-        const title = Array.isArray(match) ? match[1] : "";
-        const subtitle = title;
-
-        console.log(title);
+      if (parsedSection) {
+        const title = parsedSection;
+        const subtitle = parsedSubsection;
 
         const content = nextPart;
 
@@ -193,7 +195,6 @@ export default function Medium() {
           subtitle: subtitle,
           content: content,
         };
-
         setSections((prevSections) => [
           ...prevSections,
           <Section>{sectionObject}</Section>,

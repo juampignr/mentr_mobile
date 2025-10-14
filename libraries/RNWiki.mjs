@@ -1,6 +1,6 @@
 import katex from "katex";
 import "katex/dist/katex.min.css";
-import css from "../styles/global.js";
+import { warn } from "./show";
 
 const _ = (prop) => Symbol.for(prop);
 
@@ -95,14 +95,14 @@ export default class RNWiki {
 
       if (/^\s{1,2}.{3,100}$/g.test(part)) {
         if (lastPartType === "content") {
-          parsedResponse.push(`<Section>${part.trim()}</Section>`);
+          parsedResponse.push({ section: part.trim() });
           lastPartType = "section";
         } else {
           parsedResponse.pop();
-
-          parsedResponse.push(
-            `<Section>${lastSection.trim()}</Section>:<Section>${part.trim()}</Section>`,
-          );
+          parsedResponse.push({
+            section: lastSection.trim(),
+            subsection: part.trim(),
+          });
 
           lastPartType = "section";
         }
@@ -113,7 +113,7 @@ export default class RNWiki {
         ) {
           parsedResponse.pop();
         } else {
-          const formulaPart = part.replace(/\n/g, "").replace(/\s{2,}/g, "  ");
+          const formulaPart = part.replace(/\n{1}/g, "\n\n");
 
           //console.log(formulaPart);
           const formulaRegex = /[\{]*\\displaystyle([\s\S]*?)[\}]*\s{2}/g;
@@ -143,7 +143,7 @@ export default class RNWiki {
                         },
                       );
                     } catch (error) {
-                      console.log(error);
+                      warn(error);
                     }
                   });
                 }
@@ -153,7 +153,7 @@ export default class RNWiki {
                     displayMode: false,
                   });
                 } catch (error) {
-                  console.log(error);
+                  warn(error);
                 }
               },
             );
@@ -168,7 +168,6 @@ export default class RNWiki {
       }
     }
 
-    //console.log(parsedResponse);
     return parsedResponse;
   }
 }

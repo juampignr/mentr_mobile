@@ -7,22 +7,24 @@ import { FontAwesome6 } from "@expo/vector-icons";
 import { WebView } from "react-native-webview";
 import katex from "katex";
 import css from "../styles/global.js";
+import show from "../libraries/show";
 
 export default function Section({ children }) {
   const ctx = useContext(Context);
 
   const newTemplate = (content) => `
-  <body style="margin: 0; padding: 0; border: 0">
-    <p id="content" style='font-family:\"Corben\", serif; font-weight:400; font-style:normal; font-size:40px; text-align: left; color: #334f6a; margin: 0; padding: 0'>
-        ${content}
-    </p>
-  </body>
-  `;
+    <body style="margin-top: 40px; padding: 0; border: 0; background: transparent; font-family: 'Corben', serif; font-weight: 400; font-style: normal; font-size: 40px; text-align: left; color: #334f6a; line-height: 1.25">
+      <p id="content" style='margin: 0; padding: 0;'>
+          ${content}
+      </p>
+    </body>
+    `;
 
   const sectionTitle = useRef(children?.title);
   const sectionSubtitle = useRef(children?.subtitle);
-  const sectionContent = useRef(children?.content.trimStart());
+  const sectionContent = useRef(children?.content.trim());
 
+  show(sectionContent);
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [visibility, setVisibility] = useState(css.visible);
   const [iconToggle, setIconToggle] = useState(0);
@@ -41,7 +43,6 @@ export default function Section({ children }) {
         }, 300);
   `;
 
-  console.log(newTemplate(sectionContent.current.trim()));
   useAsyncEffect(async () => {
     if (isCollapsed) {
       setIconToggle(0);
@@ -77,19 +78,19 @@ export default function Section({ children }) {
         {sectionSubtitle.current && (
           <Text style={css.sectionSubtitle}>• {sectionSubtitle.current}</Text>
         )}
+
+        <WebView
+          style={{ height: sectionHeight }}
+          source={{
+            html: newTemplate(sectionContent.current),
+          }}
+          originWhitelist={["*"]}
+          onMessage={(event) => {
+            setSectionHeight(parseInt(event.nativeEvent.data));
+          }}
+          injectedJavaScript={webViewScript}
+        />
       </TouchableOpacity>
-      <WebView
-        style={{ height: sectionHeight, ...visibility }}
-        source={{
-          html: newTemplate(sectionContent.current),
-        }}
-        originWhitelist={["*"]}
-        onMessage={(event) => {
-          alert(event?.nativeEvent?.data);
-          setSectionHeight(parseInt(event.nativeEvent.data));
-        }}
-        injectedJavaScript={webViewScript}
-      />
     </>
   );
 }
