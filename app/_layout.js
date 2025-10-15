@@ -3,6 +3,7 @@ import { createContext, useEffect, useState, useRef } from "react";
 import { useAsyncEffect } from "@react-hook/async";
 import { useFonts, Corben_400Regular } from "@expo-google-fonts/corben";
 import { Slot } from "expo-router";
+import { getLocales } from "expo-localization";
 //import wiki from "wikipedia"
 import css from "../styles/global.js";
 import SearchBar from "../components/SearchBar";
@@ -21,6 +22,7 @@ export default function Layout() {
 
   const [topic, setTopic] = useState("");
   const [disciple, setDisciple] = useState("juampi.gnr@gmail.com");
+  const [discipleLanguage, setDiscipleLanguage] = useState("en");
 
   const [interestChain, setInterestChain] = useState({});
 
@@ -35,10 +37,22 @@ export default function Layout() {
   };
 
   useAsyncEffect(async () => {
+    const locales = getLocales();
+    let firstLocale;
+
+    if (Array.isArray(locales) && locales.length) {
+      firstLocale = getLocales()[0];
+      if (firstLocale.languageCode.length <= 3) {
+        firstLocale = firstLocale.languageCode;
+      } else {
+        firstLocale = "en";
+      }
+    }
+
     db.current = await SQLite.openDatabaseAsync("mentr.db");
 
-    //await db.current.execAsync(`DROP TABLE IF EXISTS interest`);
-    //await db.current.execAsync(`DROP TABLE IF EXISTS disciple`);
+    await db.current.execAsync(`DROP TABLE IF EXISTS interest`);
+    await db.current.execAsync(`DROP TABLE IF EXISTS disciple`);
 
     await db.current.execAsync(
       `
@@ -47,6 +61,7 @@ export default function Layout() {
 
       CREATE TABLE IF NOT EXISTS disciple (
         email VARCHAR(100) PRIMARY KEY,
+        language VARCHAR(3) DEFAULT 'en',
         fullname VARCHAR(100) DEFAULT NULL,
         dk VARCHAR(255) NOT NULL UNIQUE
       );
@@ -74,9 +89,11 @@ export default function Layout() {
     );
 
     const insertRes = await db.current.runAsync(
-      "INSERT OR IGNORE INTO disciple values ('juampi.gnr@gmail.com','Juan Pablo Behler','pbkdf2_sha256$100000$');",
+      `INSERT OR IGNORE INTO disciple values ('juampi.gnr@gmail.com',${firstLocale},'Juan Pablo Behler','pbkdf2_sha256$100000$');`,
     );
     const firstRow = await db.current.getFirstAsync("SELECT * FROM disciple");
+
+    setDiscipleLanguage(firstRow.language);
 
     return () => {
       if (db.current) {
@@ -104,6 +121,7 @@ export default function Layout() {
         topic: topic,
         setTopic: setTopic,
         disciple: disciple,
+        discipleLanguage: discipleLanguage,
         setDisciple: setDisciple,
         interestChain: interestChain,
         setInterestChain: setInterestChain,

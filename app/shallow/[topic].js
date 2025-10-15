@@ -93,13 +93,15 @@ export default function Shallow() {
   const [paginate, setPaginate] = useState(0);
   const [momentum, setMomentum] = useState(0);
   const [cardsMatrixLimits, setCardsMatrixLimits] = useState({});
+  const [isSearching, setIsSearching] = useState(false);
+  const [topics, setTopics] = useState([]);
 
   const { topic } = useLocalSearchParams();
 
   ctx.setTopic(topic);
 
   const searchTopic = async (topic) => {
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://es.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -133,7 +135,7 @@ export default function Shallow() {
 
     scopedRelated = cardsMatrix["0"].slice(1);
 
-    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno + 1]?.title}&format=json&origin=*`;
+    const topicURL = `https://es.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno + 1]?.title}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -143,7 +145,7 @@ export default function Shallow() {
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno + 1]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://es.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno + 1]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -220,7 +222,7 @@ export default function Shallow() {
   };
 
   const initialize = async () => {
-    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(topic)}&format=json&origin=*`;
+    const topicURL = `https://es.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(topic)}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -230,7 +232,7 @@ export default function Shallow() {
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://es.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -294,7 +296,7 @@ export default function Shallow() {
 
     show(allInterests);
     for (const interest of allInterests.reverse()) {
-      const interestURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
+      const interestURL = `https://es.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
       const response = await fetch(interestURL, {
         headers: {
           "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -357,7 +359,7 @@ export default function Shallow() {
 
       const updatedSwipeableView = swipeableView;
 
-      const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+      const url = `https://es.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
 
       const response = await fetch(url, {
         headers: {
@@ -412,7 +414,10 @@ export default function Shallow() {
     }
   }, [paginate, momentum]);
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
+    let queryResult = [];
+    let searchSuggestions = [];
+
     if (ctx.status === "loading") {
       setIsLoading(true);
       setLoadingText(ctx.loadingText);
@@ -432,10 +437,55 @@ export default function Shallow() {
       currentPosition.current = 1;
       setIsLoading(false);
     }
+
+    if (ctx.status?.action === "search") {
+      console.log("Spotted search from shallow!");
+      console.log(ctx?.status?.value);
+
+      try {
+        setIsSearching(true);
+
+        const response = await fetch(
+          `https://es.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
+          {
+            headers: {
+              "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+            },
+          },
+        );
+
+        const data = await response.json();
+
+        queryResult = data[1]; // The second element contains the list of suggestions
+
+        if (queryResult.length <= 10) {
+          const extraResponse = await fetch(
+            `https://es.wikipedia.org/w/api.php?action=opensearch&search=${queryResult[1]}&limit=20&namespace=0&format=json&origin=*`,
+            {
+              headers: {
+                "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+              },
+            },
+          );
+
+          const extraData = await extraResponse.json();
+          queryResult = [...data[1], ...extraData[1]];
+        }
+      } catch (error) {
+        console.error("Error fetching data from Wikipedia:", error);
+      }
+
+      for (const topic of queryResult) {
+        searchSuggestions.push(<Pill>{topic}</Pill>);
+      }
+
+      setTopics(searchSuggestions);
+    }
   }, [ctx.status]);
 
   return (
-    (isLoading && <Spinner text={ctx.loadingText} />) || (
+    (isLoading && <Spinner text={ctx.loadingText} />) ||
+    (isSearching && <PillsView>{topics}</PillsView>) || (
       <PagerView
         style={css.swipeableView}
         initialPage={0}

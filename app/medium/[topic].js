@@ -12,11 +12,12 @@ import { useAsyncEffect } from "@react-hook/async";
 import { Context } from "../_layout.js";
 import { useLocalSearchParams } from "expo-router";
 import { randomUUID } from "expo-crypto";
-
 import css from "../../styles/global.js";
 import chalk from "chalk";
 import Section from "../../components/Section.js";
 import RNWiki from "../../libraries/RNWiki.mjs";
+import PillsView from "../../components/PillsView";
+import Pill from "../../components/Pill";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -88,6 +89,8 @@ export default function Medium() {
 
   const [sections, setSections] = useState([]);
   const [summary, setSummary] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [topics, setTopics] = useState([]);
   const clickedSections = useRef(new Set());
 
   const startTimeRef = useRef(null);
@@ -206,15 +209,64 @@ export default function Medium() {
     show(ctx.allSections.current);
   }, []);
 
+  useAsyncEffect(async () => {
+    let queryResult = [];
+    let searchSuggestions = [];
+
+    if (ctx.status?.action === "search") {
+      console.log("Spotted search from medium!");
+      console.log(ctx?.status?.value);
+
+      try {
+        setIsSearching(true);
+
+        const response = await fetch(
+          `https://es.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
+          {
+            headers: {
+              "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+            },
+          },
+        );
+
+        const data = await response.json();
+
+        queryResult = data[1]; // The second element contains the list of suggestions
+
+        if (queryResult.length <= 10) {
+          const extraResponse = await fetch(
+            `https://es.wikipedia.org/w/api.php?action=opensearch&search=${queryResult[1]}&limit=20&namespace=0&format=json&origin=*`,
+            {
+              headers: {
+                "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+              },
+            },
+          );
+
+          const extraData = await extraResponse.json();
+          queryResult = [...data[1], ...extraData[1]];
+        }
+      } catch (error) {
+        console.error("Error fetching data from Wikipedia:", error);
+      }
+
+      for (const topic of queryResult) {
+        searchSuggestions.push(<Pill>{topic}</Pill>);
+      }
+
+      setTopics(searchSuggestions);
+    }
+  }, [ctx.status]);
+
   return (
-    <>
+    (isSearching && <PillsView>{topics}</PillsView>) || (
       <ScrollView style={css.contentView}>
         <Text style={css.contentTitle}>{topic}</Text>
         <Text style={css.contentSummary}>{summary}</Text>
         {sections}
         <View style={{ marginTop: 30 }}></View>
       </ScrollView>
-    </>
+    )
   );
 }
 

@@ -32,7 +32,7 @@ export default function SearchBar({ children, onType }) {
       <TextInput
         style={styles.searchBarInput}
         onChangeText={onType}
-        placeholder="What's your interest?"
+        placeholder="Qué te interesa hoy?"
         placeholderTextColor="#242424"
         textAlign="center"
       />

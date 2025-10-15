@@ -16,7 +16,7 @@ export default class RNWiki {
       page = query.join("|");
     }
 
-    const topicURL = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`;
+    const topicURL = `https://es.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -62,7 +62,7 @@ export default class RNWiki {
       "Further reading",
       "Explanatory notes",
     ];
-    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&titles=${encodeURIComponent(query)}&prop=extracts&explaintext`;
+    const url = `https://es.wikipedia.org/w/api.php?action=query&format=json&titles=${encodeURIComponent(query)}&prop=extracts&explaintext`;
 
     let response = await (
       await fetch(url, {

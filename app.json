@@ -22,7 +22,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.jpbehler.mentr"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -31,7 +32,14 @@
     "plugins": [
       "expo-font",
       "expo-router",
-      "expo-sqlite"
-    ]
+      "expo-sqlite",
+      "expo-localization"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "734c8262-b538-4d74-b8ed-d69e5cbcc0d6"
+      }
+    }
   }
 }
