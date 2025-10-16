@@ -4,7 +4,7 @@
     "slug": "mentr",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/splash.png",
     "scheme": "your-app-scheme",
     "userInterfaceStyle": "light",
     "splash": {
@@ -12,9 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
@@ -29,12 +27,7 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": [
-      "expo-font",
-      "expo-router",
-      "expo-sqlite",
-      "expo-localization"
-    ],
+    "plugins": ["expo-font", "expo-router", "expo-sqlite", "expo-localization"],
     "extra": {
       "router": {},
       "eas": {
