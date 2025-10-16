@@ -51,8 +51,8 @@ export default function Layout() {
 
     db.current = await SQLite.openDatabaseAsync("mentr.db");
 
-    await db.current.execAsync(`DROP TABLE IF EXISTS interest`);
-    await db.current.execAsync(`DROP TABLE IF EXISTS disciple`);
+    //await db.current.execAsync(`DROP TABLE IF EXISTS interest`);
+    //await db.current.execAsync(`DROP TABLE IF EXISTS disciple`);
 
     await db.current.execAsync(
       `
@@ -88,10 +88,13 @@ export default function Layout() {
     `,
     );
 
-    const insertRes = await db.current.runAsync(
-      `INSERT OR IGNORE INTO disciple values ('juampi.gnr@gmail.com',${firstLocale},'Juan Pablo Behler','pbkdf2_sha256$100000$');`,
+    const result = await db.current.runAsync(
+      `INSERT OR IGNORE INTO disciple VALUES ('juampi.gnr@gmail.com','${firstLocale}','Juan Pablo Behler','pbkdf2_sha256$100000$');`,
     );
+
     const firstRow = await db.current.getFirstAsync("SELECT * FROM disciple");
+
+    console.log(firstRow);
 
     setDiscipleLanguage(firstRow.language);
 

@@ -33,7 +33,7 @@ export default function SearchBar({ children, onType }) {
         style={styles.searchBarInput}
         onChangeText={onType}
         placeholder="Qué te interesa hoy?"
-        placeholderTextColor="#242424"
+        placeholderTextColor="ghostwhite"
         textAlign="center"
       />
     </KeyboardAvoidingView>
