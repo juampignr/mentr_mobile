@@ -19,6 +19,10 @@ const css = {
     margin: "auto",
     marginBottom: 20,
   },
+  searchBarContainer: {
+    flex: 1,
+    backgroundColor: "#ffffff", // o el color del fondo de tu app
+  },
   body: {
     flex: 1,
     fontFamily: "Corben_400Regular",

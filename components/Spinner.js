@@ -10,7 +10,7 @@ import Animated, {
 import { Image } from "expo-image";
 import css from "../styles/global.js";
 import AntDesign from "react-native-vector-icons/AntDesign";
-import spinnerImage from "../assets/spinner.we";
+import spinnerImage from "../assets/spinner.webp";
 
 export default function Spinner({
   size = 60,

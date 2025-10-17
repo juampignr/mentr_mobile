@@ -16,7 +16,10 @@ export default function Pill({ children }) {
 
   return (
     <Link href={`/shallow/${encodeURI(rawTopic)}`} asChild>
-      <TouchableOpacity style={css.pill} onPress={() => ctx.setStatus("")}>
+      <TouchableOpacity
+        style={css.pill}
+        onPress={() => ctx.setStatus("loading")}
+      >
         <Text style={css.pillText}>{topic}</Text>
       </TouchableOpacity>
     </Link>
