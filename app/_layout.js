@@ -31,6 +31,7 @@ export default function Layout() {
 
   const typeHandler = (change) => {
     clearTimeout(timeoutId.current);
+    setStatus("loading");
     timeoutId.current = setTimeout(() => {
       setStatus({ action: "search", value: change });
     }, 2000);

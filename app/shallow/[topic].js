@@ -421,6 +421,8 @@ export default function Shallow() {
     if (ctx.status === "loading") {
       setIsLoading(true);
       setLoadingText(ctx.loadingText);
+    } else {
+      setIsLoading(false);
     }
 
     if (ctx.status === "mentoring") {

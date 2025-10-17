@@ -183,6 +183,9 @@ const css = {
     color: "#b147ff99",
     marginTop: 10,
   },
+  spinnerImage: {
+    width: "100%",
+  },
   spinnerLoading: {
     justifyContent: "center",
     alignItems: "center",
