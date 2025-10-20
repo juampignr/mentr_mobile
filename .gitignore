@@ -141,8 +141,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# Lock files
-*-lock.*
 
 # Realm DBs
 default.realm*

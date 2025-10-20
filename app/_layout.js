@@ -13,7 +13,6 @@ export const Context = createContext();
 
 export default function Layout() {
   const timeoutId = useRef(0);
-  const db = useRef({});
 
   const [chain, setChain] = useState({});
   const [status, setStatus] = useState(JSON.stringify({ action: "loading" }));
@@ -25,6 +24,7 @@ export default function Layout() {
   const [discipleLanguage, setDiscipleLanguage] = useState("en");
 
   const [interestChain, setInterestChain] = useState({});
+  const [db, setDB] = useState({});
 
   const clickedSections = useRef(new Set());
   const allSections = useRef(1);
@@ -50,12 +50,12 @@ export default function Layout() {
       }
     }
 
-    db.current = await SQLite.openDatabaseAsync("mentr.db");
+    const dbInstance = await SQLite.openDatabaseAsync("mentr.db");
 
     //await db.current.execAsync(`DROP TABLE IF EXISTS interest`);
     //await db.current.execAsync(`DROP TABLE IF EXISTS disciple`);
 
-    await db.current.execAsync(
+    await dbInstance.execAsync(
       `
       PRAGMA journal_mode = WAL;
       PRAGMA foreign_keys = ON;
@@ -89,19 +89,16 @@ export default function Layout() {
     `,
     );
 
-    const result = await db.current.runAsync(
+    await dbInstance.runAsync(
       `INSERT OR IGNORE INTO disciple VALUES ('juampi.gnr@gmail.com','${firstLocale}','Juan Pablo Behler','pbkdf2_sha256$100000$');`,
     );
 
-    const firstRow = await db.current.getFirstAsync("SELECT * FROM disciple");
-
-    console.log(firstRow);
-
+    setDB(dbInstance);
     setDiscipleLanguage(firstRow.language);
 
     return () => {
-      if (db.current) {
-        db.current.close();
+      if (dbInstance) {
+        dbInstance.close();
       }
     };
   }, []);
@@ -115,7 +112,7 @@ export default function Layout() {
   return (
     <Context.Provider
       value={{
-        db: db.current,
+        db: db,
         chain: chain,
         setChain: setChain,
         status: status,

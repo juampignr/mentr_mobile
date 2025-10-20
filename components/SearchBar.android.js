@@ -25,7 +25,7 @@ export default function SearchBar({ children, onType }) {
 
   return (
     <KeyboardAvoidingView
-      //style={css.searchBar}
+      style={css.searchBarContainer}
       contentContainerStyle={css.searchBar}
       behavior={"position"}
       keyboardVerticalOffset={-30}

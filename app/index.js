@@ -126,8 +126,11 @@ export default function Curiosity() {
   }, [ctx.status]);
 
   useAsyncEffect(async () => {
-    const orderedInterests = await ctx.db.getAllAsync(
-      `SELECT chain, SUM(spent) AS totalSpent
+    if (Object.keys(ctx.db).length) {
+      alert(JSON.stringify(ctx.db));
+
+      const orderedInterests = await ctx.db.getAllAsync(
+        `SELECT chain, SUM(spent) AS totalSpent
       FROM
         interest
       WHERE
@@ -137,69 +140,78 @@ export default function Curiosity() {
       ORDER BY
         totalSpent DESC;
       `,
-    );
+      );
 
-    alert(Object.keys(ctx.db));
+      alert("Passed orderedInterests");
+      //alert(JSON.stringify(orderedInterests));
 
-    alert(JSON.stringify(orderedInterests));
+      if (!orderedInterests?.length) {
+        alert("No interests found");
 
-    if (!orderedInterests?.length) {
-      let selectedSuggestions = [
-        "Photography",
-        "Environmental science",
-        "Gardening",
-        "Role-playing games",
-        "Creative writing",
-        "Yoga",
-        "Biology",
-        "Calligraphy",
-        "Robotics",
-        "Painting",
-        "Journaling",
-        "Birdwatching",
-        "Sudoku",
-        "Mathematics",
-        "Cooking",
-        "Astronomy",
-        "Chess",
-        "Crafting",
-        "Digital art",
-        "Board games",
-        "Meditation",
-        "Computer programming",
-        "Hiking",
-        "Drawing",
-        "Video games",
-        "Chemistry",
-        "Citizen science",
-        "Playing a musical instrument",
-      ];
+        let selectedSuggestions = [
+          "Photography",
+          "Environmental science",
+          "Gardening",
+          "Role-playing games",
+          "Creative writing",
+          "Yoga",
+          "Biology",
+          "Calligraphy",
+          "Robotics",
+          "Painting",
+          "Journaling",
+          "Birdwatching",
+          "Sudoku",
+          "Mathematics",
+          "Cooking",
+          "Astronomy",
+          "Chess",
+          "Crafting",
+          "Digital art",
+          "Board games",
+          "Meditation",
+          "Computer programming",
+          "Hiking",
+          "Drawing",
+          "Video games",
+          "Chemistry",
+          "Citizen science",
+          "Playing a musical instrument",
+        ];
 
-      const shuffle = (array) => {
-        for (let i = array.length - 1; i > 0; i--) {
-          // Generate a random index j such that 0 ≤ j ≤ i
-          const j = Math.floor(Math.random() * (i + 1));
-          // Swap elements at indices i and j
-          [array[i], array[j]] = [array[j], array[i]];
+        const shuffle = (array) => {
+          for (let i = array.length - 1; i > 0; i--) {
+            // Generate a random index j such that 0 ≤ j ≤ i
+            const j = Math.floor(Math.random() * (i + 1));
+            // Swap elements at indices i and j
+            [array[i], array[j]] = [array[j], array[i]];
+          }
+          return array;
+        };
+
+        const shuffledSuggestions = shuffle(selectedSuggestions);
+
+        alert("Shuffled");
+
+        const shuffledPills = [];
+
+        for (const suggestion of shuffledSuggestions) {
+          shuffledPills.push(<Pill>{suggestion}</Pill>);
         }
-        return array;
-      };
 
-      const shuffledSuggestions = shuffle(selectedSuggestions);
-      const shuffledPills = [];
+        alert("Setting topics");
 
-      for (const suggestion of shuffledSuggestions) {
-        shuffledPills.push(<Pill>{suggestion}</Pill>);
+        setTopics(shuffledPills);
+      } else {
+        alert("Interests found");
+
+        const orderedTopics = orderedInterests.map((element) => (
+          <Pill>{element?.chain}</Pill>
+        ));
+        setTopics(orderedTopics);
       }
-
-      setTopics(shuffledPills);
-    } else {
-      const orderedTopics = orderedInterests.map((element) => (
-        <Pill>{element?.chain}</Pill>
-      ));
-      setTopics(orderedTopics);
     }
-  }, []);
+  }, [ctx.db]);
 
   return <PillsView>{topics}</PillsView>;
 }

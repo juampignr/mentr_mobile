@@ -275,10 +275,6 @@ export default function Shallow() {
     */
 
     let allData = {
-      [topicData.pageid.toString()]: {
-        title: topicData.title,
-        summary: topicData.extract,
-      },
       ...formattedData,
     };
 
@@ -327,6 +323,15 @@ export default function Shallow() {
         summary: allData[key].summary,
       });
     }
+
+    combinedAllData = [
+      {
+        id: topicData.pageid.toString(),
+        title: topicData.title,
+        summary: topicData.extract,
+      },
+      ...combinedAllData,
+    ];
 
     setCardsMatrix({ 0: combinedAllData });
     currentPosition.current = 1;

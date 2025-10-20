@@ -20,7 +20,9 @@ const css = {
     margin: "auto",
     marginBottom: 10,
   },
-
+  searchBarContainer: {
+    backgroundColor: "#ffffffff",
+  },
   body: {
     flex: 1,
     fontFamily: "Corben_400Regular",
