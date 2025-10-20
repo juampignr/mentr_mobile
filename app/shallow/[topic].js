@@ -423,6 +423,7 @@ export default function Shallow() {
     let queryResult = [];
     let searchSuggestions = [];
 
+    show(ctx.status);
     if (ctx.status === "loading") {
       setIsLoading(true);
       setLoadingText(ctx.loadingText);
@@ -431,7 +432,9 @@ export default function Shallow() {
     }
 
     if (ctx.status === "mentoring") {
-      setLoadingText("Showing the way...");
+      show("Mentoring");
+      show(JSON.stringify(ctx.interestChain));
+
       let allInterests = [];
       for (const key in ctx.interestChain) {
         allInterests.push({
@@ -442,7 +445,7 @@ export default function Shallow() {
       }
       setCardsMatrix({ 0: allInterests });
       currentPosition.current = 1;
-      setIsLoading(false);
+      //setIsLoading(false);
     }
 
     if (ctx.status?.action === "search") {

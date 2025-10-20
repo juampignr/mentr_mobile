@@ -127,8 +127,6 @@ export default function Curiosity() {
 
   useAsyncEffect(async () => {
     if (Object.keys(ctx.db).length) {
-      alert(JSON.stringify(ctx.db));
-
       const orderedInterests = await ctx.db.getAllAsync(
         `SELECT chain, SUM(spent) AS totalSpent
       FROM
@@ -142,12 +140,9 @@ export default function Curiosity() {
       `,
       );
 
-      alert("Passed orderedInterests");
       //alert(JSON.stringify(orderedInterests));
 
       if (!orderedInterests?.length) {
-        alert("No interests found");
-
         let selectedSuggestions = [
           "Photography",
           "Environmental science",
@@ -191,20 +186,14 @@ export default function Curiosity() {
 
         const shuffledSuggestions = shuffle(selectedSuggestions);
 
-        alert("Shuffled");
-
         const shuffledPills = [];
 
         for (const suggestion of shuffledSuggestions) {
           shuffledPills.push(<Pill>{suggestion}</Pill>);
         }
 
-        alert("Setting topics");
-
         setTopics(shuffledPills);
       } else {
-        alert("Interests found");
-
         const orderedTopics = orderedInterests.map((element) => (
           <Pill>{element?.chain}</Pill>
         ));
