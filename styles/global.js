@@ -7,22 +7,20 @@ const css = {
   searchBar: {
     width: "95%",
     height: 60,
-    backgroundColor: "#242424dd",
+    backgroundColor: "#242424cc",
     borderRadius: 20,
     borderBottomLeftRadius: 7,
     borderBottomRightRadius: 7,
     borderWidth: 3,
-    borderColor: "#242424",
+    borderColor: "#24242499",
+    color: "ghostwhite",
     zIndex: 999,
     padding: 0,
     paddingBottom: 2,
     margin: "auto",
-    marginBottom: 20,
+    marginBottom: 10,
   },
-  searchBarContainer: {
-    flex: 1,
-    backgroundColor: "#ffffff", // o el color del fondo de tu app
-  },
+
   body: {
     flex: 1,
     fontFamily: "Corben_400Regular",

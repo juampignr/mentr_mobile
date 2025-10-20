@@ -25,13 +25,13 @@ export default function SearchBar({ children, onType }) {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.searchBarContainer]}
-      contentContainerStyle={styles.searchBar}
+      //style={css.searchBar}
+      contentContainerStyle={css.searchBar}
       behavior={"position"}
       keyboardVerticalOffset={-30}
     >
       <TextInput
-        style={styles.searchBarInput}
+        style={css.searchBarInput}
         onChangeText={onType}
         placeholder="Qué te interesa hoy?"
         placeholderTextColor="ghostwhite"
@@ -41,4 +41,4 @@ export default function SearchBar({ children, onType }) {
   );
 }
 
-const styles = StyleSheet.create({ ...css });
+//const styles = StyleSheet.create({ ...css });

@@ -139,7 +139,9 @@ export default function Curiosity() {
       `,
     );
 
-    const interestChain = Object.entries(ctx?.chain);
+    alert(Object.keys(ctx.db));
+
+    alert(JSON.stringify(orderedInterests));
 
     if (!orderedInterests?.length) {
       let selectedSuggestions = [

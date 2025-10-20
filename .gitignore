@@ -147,3 +147,6 @@ dist
 # Realm DBs
 default.realm*
 
+
+# Expo config
+.expo
