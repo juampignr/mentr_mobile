@@ -67,20 +67,13 @@ export default function Card({ children, firstTopic }) {
     //setCardStyle(css.cardPlus);
     setCardTitleStyle(css.cardTitlePlus);
 
-    ctx.setStatus("");
-
-    ctx.setStatus("loading");
-    ctx.setLoadingText("Showing the way...");
-
     const gandalf = new Mentor(firstTopic, ctx.db, ctx.disciple);
 
     const result = await gandalf.go();
 
     ctx.setInterestChain(result);
 
-    setTimeout(() => {
-      ctx.setStatus("mentoring");
-    }, 3000);
+    ctx.setStatus("mentoring");
   };
 
   return (

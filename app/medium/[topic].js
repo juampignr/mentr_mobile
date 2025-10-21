@@ -136,14 +136,6 @@ export default function Medium() {
         );
         */
 
-        show(timeSpent);
-        show(
-          parseInt(
-            timeSpent *
-              (ctx.clickedSections.current.size / ctx.allSections.current),
-          ),
-        );
-
         const estimatedSpent =
           timeSpent *
           (ctx.clickedSections.current.size / ctx.allSections.current);
@@ -161,7 +153,7 @@ export default function Medium() {
   );
 
   useAsyncEffect(async () => {
-    const wiki = new RNWiki();
+    const wiki = new RNWiki(ctx.discipleLanguage);
 
     const parseJSON = (jsonString) => {
       try {
@@ -205,8 +197,6 @@ export default function Medium() {
         ctx.allSections.current += 1;
       }
     }
-
-    show(ctx.allSections.current);
   }, []);
 
   useAsyncEffect(async () => {

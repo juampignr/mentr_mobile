@@ -141,7 +141,7 @@ const css = {
     fontSize: 20,
     textAlign: "left",
     color: "#4d769f",
-    lineHeight: 30,
+    lineHeight: 40,
   },
   contentSummary: {
     marginTop: 15,

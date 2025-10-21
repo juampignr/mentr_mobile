@@ -1,12 +1,13 @@
 import katex from "katex";
 import "katex/dist/katex.min.css";
-import { warn } from "./show";
+import { warn, show } from "./show";
 
 const _ = (prop) => Symbol.for(prop);
 
 export default class RNWiki {
-  constructor() {
+  constructor(language = "en") {
     this.fetch = fetch;
+    this.languageCode = language;
   }
 
   async [_("getJSONPage")](query) {
@@ -16,7 +17,7 @@ export default class RNWiki {
       page = query.join("|");
     }
 
-    const topicURL = `https://es.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`;
+    const topicURL = `https://${this.languageCode}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -62,7 +63,7 @@ export default class RNWiki {
       "Further reading",
       "Explanatory notes",
     ];
-    const url = `https://es.wikipedia.org/w/api.php?action=query&format=json&titles=${encodeURIComponent(query)}&prop=extracts&explaintext`;
+    const url = `https://${this.languageCode}.wikipedia.org/w/api.php?action=query&format=json&titles=${encodeURIComponent(query)}&prop=extracts&explaintext`;
 
     let response = await (
       await fetch(url, {
@@ -80,9 +81,9 @@ export default class RNWiki {
     let lastPartType = "content";
     let lastPartContent = "start";
 
-    let parsedResponse = [];
+    let parsedResponse = [response[0].replace(/\.\n+/g, "\.\n\n")];
 
-    for (let i = 0, n = response.length; i < n; i++) {
+    for (let i = 1, n = response.length; i < n; i++) {
       let part = response[i];
       let lastSection = i ? response[i - 2] : "";
       let lastPart = i ? response[i - 1] : "";
@@ -113,7 +114,7 @@ export default class RNWiki {
         ) {
           parsedResponse.pop();
         } else {
-          const formulaPart = part.replace(/\n{1}/g, "\n\n");
+          const formulaPart = part;
 
           //console.log(formulaPart);
           const formulaRegex = /[\{]*\\displaystyle([\s\S]*?)[\}]*\s{2}/g;
@@ -130,9 +131,8 @@ export default class RNWiki {
           }
 
           if (formulaRegex.test(formulaPart)) {
-            parsedFormulaPart = formulaPart.replace(
-              formulaRegex,
-              (_, inner) => {
+            parsedFormulaPart = formulaPart
+              .replace(formulaRegex, (_, inner) => {
                 if (inner.includes("\\begin{aligned}")) {
                   return inner.replace(alignedRegex, (_, content) => {
                     try {
@@ -155,10 +155,10 @@ export default class RNWiki {
                 } catch (error) {
                   warn(error);
                 }
-              },
-            );
+              })
+              .replace(/\.\n*/g, ".<br><br>");
           } else {
-            parsedFormulaPart = formulaPart;
+            parsedFormulaPart = formulaPart.replace(/\.\n*/g, ".<br><br>");
           }
 
           parsedResponse.push(parsedFormulaPart);
@@ -168,6 +168,13 @@ export default class RNWiki {
       }
     }
 
+    /*
+    for (const element of parsedResponse) {
+      if (typeof element === "string") {
+        show(element);
+      }
+    }
+    */
     return parsedResponse;
   }
 }

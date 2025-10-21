@@ -13,7 +13,7 @@ export default function Section({ children }) {
   const ctx = useContext(Context);
 
   const newTemplate = (content) => `
-    <body style="margin-top: 40px; padding: 0; border: 0; background: transparent; font-family: 'Corben', serif; font-weight: 400; font-style: normal; font-size: 40px; text-align: left; color: #334f6a; line-height: 1.25">
+    <body style="margin-top: 40px; padding: 0; border: 0; background: transparent; font-family: 'Corben', serif; font-weight: 400; font-style: normal; font-size: 45px; text-align: left; color: #334f6a; line-height: 1.25">
       <p id="content" style='margin: 0; padding: 0;'>
           ${content}
       </p>

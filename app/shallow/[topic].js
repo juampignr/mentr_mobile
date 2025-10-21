@@ -3,6 +3,7 @@ import { FlatList, View } from "react-native";
 import { useAsyncEffect } from "@react-hook/async";
 import { Context } from "../_layout.js";
 import { useLocalSearchParams } from "expo-router";
+import { show, warn, debug } from "../../libraries/show";
 import css from "../../styles/global.js";
 import Card from "../../components/Card";
 import PillsView from "../../components/PillsView";
@@ -11,66 +12,6 @@ import PagerView from "react-native-pager-view";
 import chalk from "chalk";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Spinner from "../../components/Spinner";
-
-let show = (arg) => {
-  switch (typeof arg) {
-    case "string":
-      console.log(chalk.inverse(arg));
-      break;
-
-    case "object":
-      console.log(arg);
-      break;
-
-    case "function":
-      console.log(arg);
-      break;
-
-    default:
-      console.log(chalk.bold(arg));
-      break;
-  }
-};
-
-let debug = (arg) => {
-  switch (typeof arg) {
-    case "string":
-      console.log(chalk.red.underline(arg));
-      break;
-
-    case "object":
-      console.log(arg);
-      break;
-
-    case "function":
-      console.log(arg);
-      break;
-
-    default:
-      console.log(chalk.red.underline(arg));
-      break;
-  }
-};
-
-let warn = (arg) => {
-  switch (typeof arg) {
-    case "string":
-      console.log(chalk.bgRed.inverse(arg));
-      break;
-
-    case "object":
-      console.log(arg);
-      break;
-
-    case "function":
-      console.log(arg);
-      break;
-
-    default:
-      console.log(chalk.bgRed(arg));
-      break;
-  }
-};
 
 export default function Shallow() {
   const ctx = useContext(Context);
@@ -290,7 +231,6 @@ export default function Shallow() {
 
     let combinedAllData = [];
 
-    show(allInterests);
     for (const interest of allInterests.reverse()) {
       const interestURL = `https://es.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
       const response = await fetch(interestURL, {
@@ -423,17 +363,17 @@ export default function Shallow() {
     let queryResult = [];
     let searchSuggestions = [];
 
-    show(ctx.status);
     if (ctx.status === "loading") {
       setIsLoading(true);
       setLoadingText(ctx.loadingText);
     } else {
       setIsLoading(false);
+      setLoadingText(false);
     }
 
     if (ctx.status === "mentoring") {
-      show("Mentoring");
-      show(JSON.stringify(ctx.interestChain));
+      ctx.setStatus("loading");
+      ctx.setLoadingText("Showing the way...");
 
       let allInterests = [];
       for (const key in ctx.interestChain) {
@@ -446,12 +386,13 @@ export default function Shallow() {
       setCardsMatrix({ 0: allInterests });
       currentPosition.current = 1;
       //setIsLoading(false);
+      setTimeout(() => {
+        ctx.setStatus("");
+        ctx.setLoadingText(false);
+      }, 3000);
     }
 
     if (ctx.status?.action === "search") {
-      console.log("Spotted search from shallow!");
-      console.log(ctx?.status?.value);
-
       try {
         setIsSearching(true);
 
