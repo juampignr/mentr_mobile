@@ -81,9 +81,8 @@ export default function Curiosity() {
 
     if (ctx.status.action === "search") {
       try {
-        show(ctx?.status?.value);
         const response = await fetch(
-          `https://es.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
+          `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
           {
             headers: {
               "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -91,17 +90,13 @@ export default function Curiosity() {
           },
         );
 
-        show(
-          `https://es.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
-        );
-        show(response);
         const data = await response.json();
 
         queryResult = data[1]; // The second element contains the list of suggestions
 
         if (queryResult.length <= 10) {
           const extraResponse = await fetch(
-            `https://es.wikipedia.org/w/api.php?action=opensearch&search=${queryResult[1]}&limit=20&namespace=0&format=json&origin=*`,
+            `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${queryResult[1]}&limit=20&namespace=0&format=json&origin=*`,
             {
               headers: {
                 "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -113,7 +108,6 @@ export default function Curiosity() {
           queryResult = [...data[1], ...extraData[1]];
         }
       } catch (error) {
-        show(error);
         console.error("Error fetching data from Wikipedia:", error);
       }
 

@@ -67,7 +67,12 @@ export default function Card({ children, firstTopic }) {
     //setCardStyle(css.cardPlus);
     setCardTitleStyle(css.cardTitlePlus);
 
-    const gandalf = new Mentor(firstTopic, ctx.db, ctx.disciple);
+    const gandalf = new Mentor(
+      firstTopic,
+      ctx.db,
+      ctx.disciple,
+      ctx.discipleLanguage,
+    );
 
     const result = await gandalf.go();
 

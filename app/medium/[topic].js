@@ -211,7 +211,7 @@ export default function Medium() {
         setIsSearching(true);
 
         const response = await fetch(
-          `https://es.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
+          `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
           {
             headers: {
               "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -225,7 +225,7 @@ export default function Medium() {
 
         if (queryResult.length <= 10) {
           const extraResponse = await fetch(
-            `https://es.wikipedia.org/w/api.php?action=opensearch&search=${queryResult[1]}&limit=20&namespace=0&format=json&origin=*`,
+            `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${queryResult[1]}&limit=20&namespace=0&format=json&origin=*`,
             {
               headers: {
                 "User-Agent": "Mentr/0.9.0", // required by Wikipedia API

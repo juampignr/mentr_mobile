@@ -42,7 +42,7 @@ export default function Shallow() {
   ctx.setTopic(topic);
 
   const searchTopic = async (topic) => {
-    const url = `https://es.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -76,7 +76,7 @@ export default function Shallow() {
 
     scopedRelated = cardsMatrix["0"].slice(1);
 
-    const topicURL = `https://es.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno + 1]?.title}&format=json&origin=*`;
+    const topicURL = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno + 1]?.title}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -86,7 +86,7 @@ export default function Shallow() {
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
-    const url = `https://es.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno + 1]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno + 1]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -163,7 +163,7 @@ export default function Shallow() {
   };
 
   const initialize = async () => {
-    const topicURL = `https://es.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(topic)}&format=json&origin=*`;
+    const topicURL = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(topic)}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -173,7 +173,7 @@ export default function Shallow() {
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
-    const url = `https://es.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -232,7 +232,7 @@ export default function Shallow() {
     let combinedAllData = [];
 
     for (const interest of allInterests.reverse()) {
-      const interestURL = `https://es.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
+      const interestURL = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
       const response = await fetch(interestURL, {
         headers: {
           "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -304,7 +304,7 @@ export default function Shallow() {
 
       const updatedSwipeableView = swipeableView;
 
-      const url = `https://es.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+      const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
 
       const response = await fetch(url, {
         headers: {
@@ -397,7 +397,7 @@ export default function Shallow() {
         setIsSearching(true);
 
         const response = await fetch(
-          `https://es.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
+          `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
           {
             headers: {
               "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -411,7 +411,7 @@ export default function Shallow() {
 
         if (queryResult.length <= 10) {
           const extraResponse = await fetch(
-            `https://es.wikipedia.org/w/api.php?action=opensearch&search=${queryResult[1]}&limit=20&namespace=0&format=json&origin=*`,
+            `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${queryResult[1]}&limit=20&namespace=0&format=json&origin=*`,
             {
               headers: {
                 "User-Agent": "Mentr/0.9.0", // required by Wikipedia API

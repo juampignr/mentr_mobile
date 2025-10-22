@@ -63,7 +63,8 @@ export default class RNWiki {
       "Further reading",
       "Explanatory notes",
     ];
-    const url = `https://${this.languageCode}.wikipedia.org/w/api.php?action=query&format=json&titles=${encodeURIComponent(query)}&prop=extracts&explaintext`;
+
+    const url = `https://${this.languageCode}.wikipedia.org/w/api.php?action=query&format=json&titles=${encodeURIComponent(query)}&prop=extracts&explaintext&origin=*`;
 
     let response = await (
       await fetch(url, {
