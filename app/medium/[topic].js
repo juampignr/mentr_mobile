@@ -175,8 +175,6 @@ export default function Medium() {
       const parsedSection = part?.section;
       const parsedSubsection = part?.subsection;
 
-      console.log(parsedSection);
-
       const nextPart = result[i + 1] ?? "";
 
       if (parsedSection) {
@@ -204,9 +202,6 @@ export default function Medium() {
     let searchSuggestions = [];
 
     if (ctx.status?.action === "search") {
-      console.log("Spotted search from medium!");
-      console.log(ctx?.status?.value);
-
       try {
         setIsSearching(true);
 

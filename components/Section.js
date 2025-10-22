@@ -8,6 +8,7 @@ import { WebView } from "react-native-webview";
 import katex from "katex";
 import css from "../styles/global.js";
 import show from "../libraries/show";
+import RNWiki from "../libraries/RNWiki";
 
 export default function Section({ children }) {
   const ctx = useContext(Context);
@@ -24,7 +25,6 @@ export default function Section({ children }) {
   const sectionSubtitle = useRef(children?.subtitle);
   const sectionContent = useRef(children?.content.trim());
 
-  show(sectionContent);
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [visibility, setVisibility] = useState(css.visible);
   const [iconToggle, setIconToggle] = useState(0);
@@ -32,6 +32,18 @@ export default function Section({ children }) {
   const [sectionHeight, setSectionHeight] = useState(100);
 
   let webViewScript = `
+        document.querySelectorAll("a").forEach((link) => {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            window.ReactNativeWebView.postMessage(
+              JSON.stringify({
+                type: "linkClicked",
+                url: this.href,
+              }),
+            );
+          });
+        });
+
         setTimeout(() => {
 
           const paragraph = document.querySelector('#content');
@@ -39,7 +51,11 @@ export default function Section({ children }) {
           const rect = paragraph.getBoundingClientRect();
           const height = Math.round(rect.height / 2);
 
-          window.ReactNativeWebView.postMessage(""+height);
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: "setHeight",
+            height: height,
+          }));
+
         }, 300);
   `;
 
@@ -55,6 +71,7 @@ export default function Section({ children }) {
     }
   }, [isCollapsed]);
 
+  console.log(sectionContent.current);
   return (
     <>
       <TouchableOpacity onPress={() => setIsCollapsed(!isCollapsed)}>
@@ -85,8 +102,23 @@ export default function Section({ children }) {
             html: newTemplate(sectionContent.current),
           }}
           originWhitelist={["*"]}
-          onMessage={(event) => {
-            setSectionHeight(parseInt(event.nativeEvent.data));
+          onMessage={async (event) => {
+            let parsedMessage;
+            try {
+              parsedMessage = JSON.parse(event.nativeEvent.data);
+            } catch (error) {
+              //Best effort here
+            }
+
+            if (parsedMessage?.type === "setHeight") {
+              setSectionHeight(parsedMessage?.height);
+            } else if (parsedMessage?.type === "linkClicked") {
+              const wiki = new RNWiki(ctx.discipleLanguage);
+
+              const page = await wiki.getJsonPage(parsedMessage?.url);
+
+              show(page);
+            }
           }}
           injectedJavaScript={webViewScript}
         />

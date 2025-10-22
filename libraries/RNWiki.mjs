@@ -54,7 +54,10 @@ export default class RNWiki {
   async getJSONPage(query) {
     return await this[_("getJSONPage")](query);
   }
-
+  async getJsonPage(query) {
+    return await this[_("getJSONPage")](query);
+  }
+  
   async getPage(query) {
     const excludedSections = [
       "See also",
@@ -64,7 +67,7 @@ export default class RNWiki {
       "Explanatory notes",
     ];
 
-    const url = `https://${this.languageCode}.wikipedia.org/w/api.php?action=query&format=json&titles=${encodeURIComponent(query)}&prop=extracts&explaintext&origin=*`;
+    const url = `https://${this.languageCode}.wikipedia.org/w/api.php?action=query&format=json&titles=${encodeURIComponent(query)}&prop=extracts|links&explaintext&pllimit=max&origin=*`;
 
     let response = await (
       await fetch(url, {
@@ -73,9 +76,18 @@ export default class RNWiki {
         },
       })
     ).json();
+    let responseLinks;
 
     response = Object.values(response.query.pages)[0];
+    responseLinks = response.links.map((link) => link.title);
     response = response.extract;
+
+    for (const link of responseLinks) {
+      response = response.replace(
+        RegExp(link, "g"),
+        `<a href="${link}">${link}</a>`,
+      );
+    }
 
     response = response.split(/[=]{1,2}\s*[a-zA-Z]*\s*[=]{1,2}/gm);
 
@@ -176,6 +188,7 @@ export default class RNWiki {
       }
     }
     */
+
     return parsedResponse;
   }
 }
