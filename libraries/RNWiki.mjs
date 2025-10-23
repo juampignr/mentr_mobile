@@ -57,7 +57,7 @@ export default class RNWiki {
   async getJsonPage(query) {
     return await this[_("getJSONPage")](query);
   }
-  
+
   async getPage(query) {
     const excludedSections = [
       "See also",
@@ -85,7 +85,7 @@ export default class RNWiki {
     for (const link of responseLinks) {
       response = response.replace(
         RegExp(link, "g"),
-        `<a href="${link}">${link}</a>`,
+        `<a style="color:#4d769f" href="${link}">${link}</a>`,
       );
     }
 

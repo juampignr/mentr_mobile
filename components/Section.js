@@ -1,5 +1,5 @@
 import { useContext, useState, useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Modal } from "react-native";
 import { useAsyncEffect } from "@react-hook/async";
 import { Context } from "../app/_layout.js";
 import { Link } from "expo-router";
@@ -24,10 +24,13 @@ export default function Section({ children }) {
   const sectionTitle = useRef(children?.title);
   const sectionSubtitle = useRef(children?.subtitle);
   const sectionContent = useRef(children?.content.trim());
+  const modalContent = useRef(null);
+  const modalLink = useRef(null);
 
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [visibility, setVisibility] = useState(css.visible);
   const [iconToggle, setIconToggle] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const [sectionHeight, setSectionHeight] = useState(100);
 
@@ -117,12 +120,43 @@ export default function Section({ children }) {
 
               const page = await wiki.getJsonPage(parsedMessage?.url);
 
-              show(page);
+              modalContent.current =
+                Object.values(page)[0].summary.slice(0, 300) + "...";
+              setModalVisible(true);
+
+              modalLink.current = parsedMessage?.url;
             }
           }}
           injectedJavaScript={webViewScript}
         />
       </TouchableOpacity>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <View style={css.modalCenteredView}>
+          <View style={css.modalView}>
+            <Text style={css.modalSummary}>{modalContent.current}</Text>
+            <TouchableOpacity
+              style={[css.modalButton, { marginTop: 20 }]}
+              onPress={() => setModalVisible(false)}
+            >
+              <Link
+                href={`/medium/Biology:${encodeURIComponent(modalLink.current)}`}
+                asChild
+              >
+                <Text style={css.modalButtonText}>
+                  {ctx.discipleName === "en" ? "More" : "Ver Más"}
+                </Text>
+              </Link>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }

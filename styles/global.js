@@ -198,6 +198,47 @@ const css = {
   spinnerLoaded: {
     display: "none",
   },
+  modalCenteredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    borderTopLeftRadius: 0,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalSummary: {
+    fontFamily: "Corben_400Regular",
+    fontSize: 15,
+    lineHeight: 20,
+    textAlign: "left",
+    color: "#4d769f",
+  },
+  modalButton: {
+    borderTopRightRadius: 15,
+    borderBottomRightRadius: 15,
+    padding: 10,
+    elevation: 1,
+    backgroundColor: "#b147ff99",
+  },
+  modalButtonText: {
+    fontFamily: "Corben_400Regular",
+    fontSize: 15,
+    lineHeight: 20,
+    color: "ghostwhite",
+  },
 };
 
 export default css;
