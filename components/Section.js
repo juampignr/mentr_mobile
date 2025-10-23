@@ -145,6 +145,7 @@ export default function Section({ children }) {
               style={[css.modalButton, { marginTop: 20 }]}
               onPress={() => setModalVisible(false)}
             >
+              //Check this later
               <Link
                 href={`/medium/Biology:${encodeURIComponent(modalLink.current)}`}
                 asChild
