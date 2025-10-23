@@ -1,4 +1,4 @@
-import { useContext, useState, useRef, useEffect } from "react";
+import { useContext, useState, useRef } from "react";
 import { View, Text, TouchableOpacity, Modal } from "react-native";
 import { useAsyncEffect } from "@react-hook/async";
 import { Context } from "../app/_layout.js";
