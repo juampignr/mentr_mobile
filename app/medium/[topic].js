@@ -165,7 +165,12 @@ export default function Medium() {
 
     const result = await wiki.getPage(topic);
 
-    setSummary(!result[0]?.section ? result[0] : result[1]);
+    //Check this later
+    setSummary(
+      !result[0]?.section
+        ? result[0].replace(/<a[^>]*href="([^"]+)"[^>]*>\1<\/a>/g, "$1")
+        : result[1].replace(/<a[^>]*href="([^"]+)"[^>]*>\1<\/a>/g, "$1"),
+    );
 
     ctx.clickedSections.current = new Set();
     ctx.allSections.current = 1;
