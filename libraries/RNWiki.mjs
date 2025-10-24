@@ -82,14 +82,18 @@ export default class RNWiki {
     responseLinks = response.links.map((link) => link.title);
     response = response.extract;
 
-    for (const link of responseLinks) {
-      response = response.replace(
-        RegExp(link, "g"),
-        `<a style="color:#4d769f" href="${link}">${link}</a>`,
-      );
-    }
-
     response = response.split(/[=]{1,2}\s*[a-zA-Z]*\s*[=]{1,2}/gm);
+
+    for (const link of responseLinks) {
+      for (let i = 1, n = response.length; i < n; i++) {
+        if (!response[i].startsWith(" ")) {
+          response[i] = response[i].replace(
+            RegExp(link, "g"),
+            `<a style="color:#4d769f" href="${link}">${link}</a>`,
+          );
+        }
+      }
+    }
 
     let lastPartType = "content";
     let lastPartContent = "start";

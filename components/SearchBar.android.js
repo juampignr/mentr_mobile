@@ -4,36 +4,48 @@ import {
   TextInput,
   Text,
   View,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useRef, useEffect, useContext } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRef, useEffect, useContext, useState } from "react";
 import { Context } from "../app/_layout.js";
 
 export default function SearchBar({ children, onType }) {
   const ctx = useContext(Context);
-  const ref = useRef(null);
-  const insets = useSafeAreaInsets();
+  const [verticalOffset, setVerticalOffset] = useState(-30);
+  const placeholder =
+    ctx.discipleLanguage === "es"
+      ? "¿Qué te interesa hoy?"
+      : "What's your interest?";
 
-  /*
-  const onSubmit = () => {
-    ctx.setStatus({ action: "submitSearch" });
-  };
-  */
-  let timeout = null;
+  useEffect(() => {
+    const hideKeyboard = Keyboard.addListener("keyboardDidHide", () => {
+      console.log("Hiding keyboard");
+      setVerticalOffset(-30);
+    });
+    const showKeyboard = Keyboard.addListener("keyboardDidShow", () => {
+      console.log("Showing keyboard");
+      setVerticalOffset(-50);
+    });
+
+    return () => {
+      hideKeyboard.remove();
+      showKeyboard.remove();
+    };
+  }, []);
 
   return (
     <KeyboardAvoidingView
       style={css.searchBarContainer}
       contentContainerStyle={css.searchBar}
       behavior={"position"}
-      keyboardVerticalOffset={-30}
+      keyboardVerticalOffset={verticalOffset}
     >
       <TextInput
         style={css.searchBarInput}
         onChangeText={onType}
-        placeholder="Qué te interesa hoy?"
+        placeholder={placeholder}
         placeholderTextColor="ghostwhite"
         textAlign="center"
       />

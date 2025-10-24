@@ -74,7 +74,6 @@ export default function Section({ children }) {
     }
   }, [isCollapsed]);
 
-  console.log(sectionContent.current);
   return (
     <>
       <TouchableOpacity onPress={() => setIsCollapsed(!isCollapsed)}>
@@ -145,9 +144,8 @@ export default function Section({ children }) {
               style={[css.modalButton, { marginTop: 20 }]}
               onPress={() => setModalVisible(false)}
             >
-              //Check this later
               <Link
-                href={`/medium/Biology:${encodeURIComponent(modalLink.current)}`}
+                href={`/medium/${encodeURIComponent(ctx.topic)}:${encodeURIComponent(modalLink.current)}`}
                 asChild
               >
                 <Text style={css.modalButtonText}>

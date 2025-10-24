@@ -186,6 +186,7 @@ export default function Shallow() {
 
     pages = pages.filter((page) => page.extract);
 
+    show(pages);
     let formattedData = {};
     for (const page of pages) {
       formattedData[page.pageid.toString()] = {
@@ -242,18 +243,20 @@ export default function Shallow() {
       let interestData = await response?.json();
       interestData = Object.values(interestData.query.pages)[0];
 
-      if (allData[interestData.pageid.toString()]) {
-        delete allData[interestData.pageid.toString()];
-      }
+      if (interestData?.extract) {
+        if (allData[interestData.pageid.toString()]) {
+          delete allData[interestData.pageid.toString()];
+        }
 
-      combinedAllData = [
-        {
-          id: interestData.pageid.toString(),
-          title: interestData.title,
-          summary: interestData.extract,
-        },
-        ...combinedAllData,
-      ];
+        combinedAllData = [
+          {
+            id: interestData.pageid.toString(),
+            title: interestData.title,
+            summary: interestData.extract,
+          },
+          ...combinedAllData,
+        ];
+      }
     }
 
     for (const key in allData) {
@@ -263,15 +266,6 @@ export default function Shallow() {
         summary: allData[key].summary,
       });
     }
-
-    combinedAllData = [
-      {
-        id: topicData.pageid.toString(),
-        title: topicData.title,
-        summary: topicData.extract,
-      },
-      ...combinedAllData,
-    ];
 
     setCardsMatrix({ 0: combinedAllData });
     currentPosition.current = 1;
