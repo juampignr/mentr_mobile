@@ -165,6 +165,8 @@ export default function Medium() {
 
     const result = await wiki.getPage(topic);
 
+    console.log(result);
+
     setSummary(!result[0]?.section ? result[0] : result[1]);
 
     ctx.clickedSections.current = new Set();

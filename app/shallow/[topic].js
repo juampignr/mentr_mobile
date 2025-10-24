@@ -186,7 +186,6 @@ export default function Shallow() {
 
     pages = pages.filter((page) => page.extract);
 
-    show(pages);
     let formattedData = {};
     for (const page of pages) {
       formattedData[page.pageid.toString()] = {

@@ -82,19 +82,21 @@ export default class RNWiki {
     responseLinks = response.links.map((link) => link.title);
     response = response.extract;
 
+    show(response);
     response = response.split(/[=]{1,2}\s*[a-zA-Z]*\s*[=]{1,2}/gm);
 
     for (const link of responseLinks) {
       for (let i = 1, n = response.length; i < n; i++) {
         if (!response[i].startsWith(" ")) {
           response[i] = response[i].replace(
-            RegExp(link, "g"),
+            link,
             `<a style="color:#4d769f" href="${link}">${link}</a>`,
           );
         }
       }
     }
 
+    show(response);
     let lastPartType = "content";
     let lastPartContent = "start";
 
@@ -178,6 +180,7 @@ export default class RNWiki {
             parsedFormulaPart = formulaPart.replace(/\.\n*/g, ".<br><br>");
           }
 
+          show(parsedResponse);
           parsedResponse.push(parsedFormulaPart);
         }
 
@@ -186,12 +189,12 @@ export default class RNWiki {
     }
 
     /*
-    for (const element of parsedResponse) {
-      if (typeof element === "string") {
-        show(element);
+      for (const element of parsedResponse) {
+        if (typeof element === "string") {
+          show(element);
+        }
       }
-    }
-    */
+      */
 
     return parsedResponse;
   }
