@@ -23,7 +23,7 @@ export default function Section({ children }) {
 
   const sectionTitle = useRef(children?.title);
   const sectionSubtitle = useRef(children?.subtitle);
-  const sectionContent = useRef(children?.content.trim());
+  const sectionContent = useRef(children?.content.trimEnd("\n"));
   const modalContent = useRef(null);
   const modalLink = useRef(null);
 

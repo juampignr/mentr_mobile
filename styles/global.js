@@ -99,6 +99,7 @@ const css = {
     lineHeight: 20,
     textAlign: "left",
     color: "#4d769f",
+    marginBottom: 10,
   },
   listView: {
     padding: 10,

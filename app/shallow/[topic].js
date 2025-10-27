@@ -58,7 +58,7 @@ export default function Shallow() {
     const formattedData = pages.map((page) => ({
       id: page.pageid.toString(),
       title: page.title,
-      summary: page.extract,
+      summary: page.extract.trim(),
     }));
 
     return formattedData;
@@ -74,9 +74,9 @@ export default function Shallow() {
     }
     */
 
-    scopedRelated = cardsMatrix["0"].slice(1);
+    scopedRelated = cardsMatrix["0"];
 
-    const topicURL = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno + 1]?.title}&format=json&origin=*`;
+    const topicURL = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno]?.title}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -86,7 +86,7 @@ export default function Shallow() {
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
-    const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno + 1]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
@@ -102,7 +102,7 @@ export default function Shallow() {
     let formattedData = pages.map((page) => ({
       id: page.pageid.toString(),
       title: page.title,
-      summary: page.extract,
+      summary: page.extract.trim(),
     }));
 
     if (data?.continue) {
@@ -119,7 +119,7 @@ export default function Shallow() {
         {
           id: topicData.pageid,
           title: topicData.title,
-          summary: topicData.extract,
+          summary: topicData.extract.trim(),
         },
         ...formattedData,
       ],
@@ -204,6 +204,7 @@ export default function Shallow() {
     setRelated(formattedData);
     setIsLoading(false);
 
+    let allData;
     /*
     let allData = [
       {
@@ -215,7 +216,7 @@ export default function Shallow() {
     ];
     */
 
-    let allData = {
+    allData = {
       ...formattedData,
     };
 
@@ -251,7 +252,7 @@ export default function Shallow() {
           {
             id: interestData.pageid.toString(),
             title: interestData.title,
-            summary: interestData.extract,
+            summary: interestData.extract.trim(),
           },
           ...combinedAllData,
         ];
@@ -314,7 +315,7 @@ export default function Shallow() {
       let formattedData = pages.map((page) => ({
         id: page.pageid.toString(),
         title: page.title,
-        summary: page.extract,
+        summary: page.extract.trim(),
       }));
 
       if (data?.continue) {

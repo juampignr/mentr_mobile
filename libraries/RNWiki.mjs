@@ -185,9 +185,9 @@ export default class RNWiki {
                   warn(error);
                 }
               })
-              .replace(/\.\n*/g, ".<br><br>");
+              .replace(/\.\n+/g, ".<br><br>");
           } else {
-            parsedFormulaPart = formulaPart.replace(/\.\n*/g, ".<br><br>");
+            parsedFormulaPart = formulaPart.replace(/\.\n+/g, ".<br><br>");
           }
 
           show(parsedResponse);
