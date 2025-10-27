@@ -38,22 +38,7 @@ export default function Layout() {
   };
 
   useAsyncEffect(async () => {
-    const locales = getLocales();
-    let firstLocale;
-
-    if (Array.isArray(locales) && locales.length) {
-      firstLocale = getLocales()[0];
-      if (firstLocale.languageCode.length <= 3) {
-        firstLocale = firstLocale.languageCode;
-      } else {
-        firstLocale = "en";
-      }
-    }
-
     const dbInstance = await SQLite.openDatabaseAsync("mentr.db");
-
-    //await db.current.execAsync(`DROP TABLE IF EXISTS interest`);
-    //await db.current.execAsync(`DROP TABLE IF EXISTS disciple`);
 
     await dbInstance.execAsync(
       `
@@ -89,12 +74,44 @@ export default function Layout() {
     `,
     );
 
+    const dbLanguage = await dbInstance.getFirstAsync(
+      `select language from disciple where email = 'juampi.gnr@gmail.com'`,
+    );
+
+    let firstLocale;
+
+    if (dbLanguage?.language) {
+      console.log("Found language:", dbLanguage.language);
+      firstLocale = dbLanguage.language;
+    } else {
+      const locales = getLocales();
+
+      if (Array.isArray(locales) && locales.length) {
+        firstLocale = getLocales()[0];
+        alert(JSON.stringify(firstLocale));
+
+        if (firstLocale.languageCode.length <= 3) {
+          firstLocale = firstLocale.languageCode;
+        } else {
+          firstLocale = "en";
+        }
+      }
+
+      console.log("No language found, locale:", firstLocale);
+    }
+
+    //await db.current.execAsync(`DROP TABLE IF EXISTS interest`);
+    //await db.current.execAsync(`DROP TABLE IF EXISTS disciple`);
+
+    alert(
+      `INSERT OR IGNORE INTO disciple VALUES ('juampi.gnr@gmail.com','${firstLocale}','Juan Pablo Behler','pbkdf2_sha256$100000$');`,
+    );
     await dbInstance.runAsync(
       `INSERT OR IGNORE INTO disciple VALUES ('juampi.gnr@gmail.com','${firstLocale}','Juan Pablo Behler','pbkdf2_sha256$100000$');`,
     );
 
     setDB(dbInstance);
-    setDiscipleLanguage(firstRow.language);
+    setDiscipleLanguage(firstLocale);
 
     return () => {
       if (dbInstance) {

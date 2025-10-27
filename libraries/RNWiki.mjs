@@ -11,43 +11,53 @@ export default class RNWiki {
   }
 
   async [_("getJSONPage")](query) {
-    let page = query;
-
-    if (Array.isArray(query)) {
-      page = query.join("|");
-    }
-
-    const topicURL = `https://${this.languageCode}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`;
-    const topicResponse = await fetch(topicURL, {
-      headers: {
-        "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
-      },
-    });
-
-    let topicData = await topicResponse.json();
     let result;
+    let topicData;
 
-    if (Array.isArray(topicData.query.pages)) {
-      const element = Object.values(topicData.query.pages)[0];
+    try {
+      let page = query;
 
-      result = {
-        [element.pageid]: {
-          title: element.title,
-          summary: element.extract,
+      if (Array.isArray(query)) {
+        page = query.join("|");
+      }
+
+      alert(
+        `https://${this.languageCode}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`,
+      );
+      const topicURL = `https://${this.languageCode}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`;
+      const topicResponse = await fetch(topicURL, {
+        headers: {
+          "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
         },
-      };
-    } else {
-      for (const element of Object.values(topicData.query.pages)) {
+      });
+
+      topicData = await topicResponse.json();
+
+      alert(JSON.stringify(topicData));
+
+      if (Array.isArray(topicData.query.pages)) {
+        const element = Object.values(topicData.query.pages)[0];
+
         result = {
-          ...result,
           [element.pageid]: {
             title: element.title,
             summary: element.extract,
           },
         };
+      } else {
+        for (const element of Object.values(topicData.query.pages)) {
+          result = {
+            ...result,
+            [element.pageid]: {
+              title: element.title,
+              summary: element.extract,
+            },
+          };
+        }
       }
+    } catch (error) {
+      alert(error);
     }
-
     return result;
   }
 

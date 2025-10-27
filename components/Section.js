@@ -115,15 +115,20 @@ export default function Section({ children }) {
             if (parsedMessage?.type === "setHeight") {
               setSectionHeight(parsedMessage?.height);
             } else if (parsedMessage?.type === "linkClicked") {
+              alert("Link clicked");
               const wiki = new RNWiki(ctx.discipleLanguage);
 
-              const page = await wiki.getJsonPage(parsedMessage?.url);
+              try {
+                const page = await wiki.getJsonPage(parsedMessage?.url);
 
-              modalContent.current =
-                Object.values(page)[0].summary.slice(0, 300) + "...";
-              setModalVisible(true);
+                modalContent.current =
+                  Object.values(page)[0].summary.slice(0, 300) + "...";
+                setModalVisible(true);
 
-              modalLink.current = parsedMessage?.url;
+                modalLink.current = parsedMessage?.url;
+              } catch (error) {
+                alert(error);
+              }
             }
           }}
           injectedJavaScript={webViewScript}
