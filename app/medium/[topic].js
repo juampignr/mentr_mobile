@@ -113,11 +113,12 @@ export default function Medium() {
           `SELECT * FROM interest WHERE disciple_email = 'juampi.gnr@gmail.com' AND name = '${topic}'`,
         );
 
+        /* Query on shallow
         const allInterests = ctx.db.getAllSync(
           `SELECT chain,name,spent FROM interest WHERE disciple_email = 'juampi.gnr@gmail.com'`,
         );
 
-        /* Query on shallow
+
         const allInterests = ctx.db.getAllSync(
           `SELECT
             disciple.email AS disciple,

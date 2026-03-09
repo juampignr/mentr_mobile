@@ -21,9 +21,6 @@ export default class RNWiki {
         page = query.join("|");
       }
 
-      alert(
-        `https://${this.languageCode}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`,
-      );
       const topicURL = `https://${this.languageCode}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(page)}&format=json&origin=*`;
       const topicResponse = await fetch(topicURL, {
         headers: {
@@ -32,8 +29,6 @@ export default class RNWiki {
       });
 
       topicData = await topicResponse.json();
-
-      alert(JSON.stringify(topicData));
 
       if (Array.isArray(topicData.query.pages)) {
         const element = Object.values(topicData.query.pages)[0];
@@ -56,7 +51,7 @@ export default class RNWiki {
         }
       }
     } catch (error) {
-      alert(error);
+      //Do something here
     }
     return result;
   }

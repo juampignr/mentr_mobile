@@ -1,9 +1,17 @@
-import { useContext, useState, useRef, useEffect, memo } from "react";
-import { FlatList, View } from "react-native";
+import {
+  useContext,
+  useState,
+  useRef,
+  useEffect,
+  memo,
+  useCallback,
+} from "react";
+import { FlatList, View, Alert, BackHandler } from "react-native";
 import { useAsyncEffect } from "@react-hook/async";
 import { Context } from "../_layout.js";
 import { useLocalSearchParams } from "expo-router";
 import { show, warn, debug } from "../../libraries/show";
+import { useFocusEffect } from "@react-navigation/native";
 import css from "../../styles/global.js";
 import Card from "../../components/Card";
 import PillsView from "../../components/PillsView";
@@ -21,6 +29,8 @@ export default function Shallow() {
   const firstLoad = useRef(true);
   const currentPosition = useRef(1);
   const currentFlatList = useRef();
+  const hasMentored = useRef(0);
+  const lastMatrix = useRef({});
 
   const [related, setRelated] = useState([]);
   const [cardsData, setCardsData] = useState([]);
@@ -271,6 +281,26 @@ export default function Shallow() {
     currentPosition.current = 1;
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (hasMentored.current === 1) {
+          setCardsMatrix(lastMatrix.current);
+          hasMentored.current = 0;
+          return true;
+        }
+        return false;
+      };
+
+      const sub = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress,
+      );
+
+      return () => sub.remove();
+    }, []),
+  );
+
   useAsyncEffect(initialize, []);
 
   useAsyncEffect(async () => {
@@ -377,12 +407,14 @@ export default function Shallow() {
           summary: ctx.interestChain[key].summary,
         });
       }
+      lastMatrix.current = cardsMatrix;
       setCardsMatrix({ 0: allInterests });
       currentPosition.current = 1;
       //setIsLoading(false);
       setTimeout(() => {
         ctx.setStatus("");
         ctx.setLoadingText(false);
+        hasMentored.current = 1;
       }, 3000);
     }
 
