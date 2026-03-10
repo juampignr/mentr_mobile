@@ -314,7 +314,11 @@ export default function Shallow() {
           onEndReached={paginationHandler}
           onMomentumScrollBegin={() => setMomentum(1)}
           onMomentumScrollEnd={() => setMomentum(0)}
-          renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
+          renderItem={(item) => (
+            <Card firstTopic={topic} isMentoring={hasMentored.current}>
+              {item}
+            </Card>
+          )}
           keyExtractor={(item, index) => `${item.id}${index}`}
         />
       </View>
@@ -407,6 +411,9 @@ export default function Shallow() {
           summary: ctx.interestChain[key].summary,
         });
       }
+
+      hasMentored.current = 1;
+
       lastMatrix.current = cardsMatrix;
       setCardsMatrix({ 0: allInterests });
       currentPosition.current = 1;
@@ -414,7 +421,6 @@ export default function Shallow() {
       setTimeout(() => {
         ctx.setStatus("");
         ctx.setLoadingText(false);
-        hasMentored.current = 1;
       }, 3000);
     }
 

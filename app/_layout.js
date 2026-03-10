@@ -4,6 +4,8 @@ import { useAsyncEffect } from "@react-hook/async";
 import { useFonts, Corben_400Regular } from "@expo-google-fonts/corben";
 import { Slot } from "expo-router";
 import { getLocales } from "expo-localization";
+import { File, Paths, Directory } from "expo-file-system";
+
 //import wiki from "wikipedia"
 import css from "../styles/global.js";
 import SearchBar from "../components/SearchBar";
@@ -35,6 +37,28 @@ export default function Layout() {
     timeoutId.current = setTimeout(() => {
       setStatus({ action: "search", value: change });
     }, 2000);
+  };
+
+  const dumpDB = async function () {
+    const backupDir = new Directory(Paths.document, "mentr_user_data");
+
+    backupDir.create({ idempotent: true, intermediates: true });
+
+    const sourceDb = await SQLite.openDatabaseAsync("mentr.db");
+    const destDb = await SQLite.openDatabaseAsync(
+      "mentr-backup.db",
+      {},
+      backupDir.uri,
+    );
+
+    await SQLite.backupDatabaseAsync({
+      sourceDatabase: sourceDb,
+      sourceDatabaseName: "main",
+      destDatabase: destDb,
+      destDatabaseName: "main",
+    });
+
+    return destDb.databasePath;
   };
 
   useAsyncEffect(async () => {
@@ -130,6 +154,7 @@ export default function Layout() {
     <Context.Provider
       value={{
         db: db,
+        dumpDB: dumpDB,
         chain: chain,
         setChain: setChain,
         status: status,

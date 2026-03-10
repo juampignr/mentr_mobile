@@ -192,6 +192,8 @@ export default function Curiosity() {
           <Pill>{element?.chain}</Pill>
         ));
         setTopics(orderedTopics);
+
+        console.log(await ctx.dumpDB(ctx.db));
       }
     }
   }, [ctx.db]);
