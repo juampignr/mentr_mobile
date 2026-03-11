@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import { useAsyncEffect } from "@react-hook/async";
 import { Link } from "expo-router";
 import { Context } from "./_layout.js";
-import { View, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, Modal, Pressable, Text } from "react-native";
 import { WebView } from "react-native-webview";
 import { Image } from "expo-image";
 
@@ -12,6 +12,7 @@ import PillsView from "../components/PillsView";
 import Pill from "../components/Pill";
 import chalk from "chalk";
 import logo from "../assets/images/icon.png";
+import css from "../styles/global.js";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -78,6 +79,12 @@ export default function Curiosity() {
   const insets = useSafeAreaInsets();
 
   const [topics, setTopics] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const dumpAndSave = async () => {
+    setModalVisible(!modalVisible);
+  };
+
   const randomIndex = (categories) => {
     return Math.floor(Math.random() * categories.length);
   };
@@ -225,11 +232,44 @@ export default function Curiosity() {
       >
         <Image source={logo} style={{ width: 50, height: 50 }} />
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={dumpAndSave}>
           <FontAwesome6 style={{ color: "#242424cc" }} name="share" size={30} />
         </TouchableOpacity>
       </View>
       <PillsView>{topics}</PillsView>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <View style={css.modalCenteredView}>
+          <View style={css.modalViewBig}>
+            <Text
+              style={{
+                fontFamily: "Corben_400Regular",
+                fontSize: 20,
+                lineHeight: 30,
+                textAlign: "left",
+                color: "#4d769f",
+              }}
+            >
+              Export your learning data
+            </Text>
+            <TouchableOpacity
+              style={[css.modalButton, { marginTop: 20 }]}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={css.modalButtonText}>
+                {ctx.discipleName === "en" ? "More" : "Ver Más"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
