@@ -2,10 +2,16 @@ import { useState, useContext, useEffect } from "react";
 import { useAsyncEffect } from "@react-hook/async";
 import { Link } from "expo-router";
 import { Context } from "./_layout.js";
+import { View, TouchableOpacity } from "react-native";
 import { WebView } from "react-native-webview";
+import { Image } from "expo-image";
+
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FontAwesome6 } from "@expo/vector-icons";
 import PillsView from "../components/PillsView";
 import Pill from "../components/Pill";
 import chalk from "chalk";
+import logo from "../assets/images/icon.png";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -69,6 +75,7 @@ let warn = (arg) => {
 
 export default function Curiosity() {
   const ctx = useContext(Context);
+  const insets = useSafeAreaInsets();
 
   const [topics, setTopics] = useState([]);
   const randomIndex = (categories) => {
@@ -198,5 +205,31 @@ export default function Curiosity() {
     }
   }, [ctx.db]);
 
-  return <PillsView>{topics}</PillsView>;
+  return (
+    <>
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          height: "10%",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingTop: insets.top,
+          paddingHorizontal: 10,
+          backgroundColor: "white",
+        }}
+      >
+        <Image source={logo} style={{ width: 50, height: 50 }} />
+
+        <TouchableOpacity>
+          <FontAwesome6 style={{ color: "#242424cc" }} name="share" size={30} />
+        </TouchableOpacity>
+      </View>
+      <PillsView>{topics}</PillsView>
+    </>
+  );
 }

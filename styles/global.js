@@ -29,9 +29,18 @@ const css = {
     fontSize: 10,
     backgroundColor: "#fff",
   },
+  navBar: {
+    position: "fixed",
+    padding: 10,
+    width: "95%",
+    fontFamily: "Corben_400Regular",
+    fontSize: 10,
+    backgroundColor: "#fff",
+  },
   pillsView: {
     maxHeight: "85%",
     maxWidth: "95%",
+    paddingTop: "15%",
     padding: 1,
     fontSize: 10,
     flex: 1,
