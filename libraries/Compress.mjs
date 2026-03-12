@@ -1,8 +1,8 @@
 import { gzipSync, gunzipSync } from "fflate";
 import { File, Directory } from "expo-file-system";
 
-export async function compressBackup(dbPath) {
-  const dbFile = new File(dbPath);
+export async function compressBackup(sourcePath, destPath) {
+  const dbFile = new File(sourcePath);
 
   if (!dbFile.exists) {
     //Do something here later!
@@ -17,7 +17,7 @@ export async function compressBackup(dbPath) {
 
   const outFile = pickedDir.createFile("mentr.db.gz", "application/x-gzip");
 
-  console.log(outFile.uri);
+  console.log(destPath.uri);
 
   outFile.write(compressedBytes);
 

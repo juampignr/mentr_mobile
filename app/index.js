@@ -294,10 +294,8 @@ export default function Curiosity() {
 
             <View
               style={{
-                flexGap: 10,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-around",
+                gap: 20,
+                flexDirection: "column",
               }}
             >
               <Text
@@ -309,12 +307,11 @@ export default function Curiosity() {
                   color: "#4d769f",
                 }}
               >
-                1. Download your data
+                A backup of all your progress will be saved to your device:
               </Text>
               <TouchableOpacity
                 style={{
-                  borderTopRightRadius: 15,
-                  borderBottomRightRadius: 15,
+                  borderRadius: 15,
                   elevation: 1,
                   backgroundColor: "#b147ff99",
                   paddingHorizontal: 15,
@@ -325,11 +322,12 @@ export default function Curiosity() {
                 <Text
                   style={{
                     fontFamily: "Corben_400Regular",
-                    fontSize: 18,
+                    fontSize: 20,
                     color: "white",
+                    textAlign: "center",
                   }}
                 >
-                  here
+                  Download
                 </Text>
               </TouchableOpacity>
             </View>
