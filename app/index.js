@@ -5,9 +5,11 @@ import { Context } from "./_layout.js";
 import { View, TouchableOpacity, Modal, Pressable, Text } from "react-native";
 import { WebView } from "react-native-webview";
 import { Image } from "expo-image";
-
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome6 } from "@expo/vector-icons";
+import { shareAsync } from "expo-sharing";
+import { compressBackup, decompressBackup } from "../libraries/Compress";
+
 import PillsView from "../components/PillsView";
 import Pill from "../components/Pill";
 import chalk from "chalk";
@@ -81,12 +83,21 @@ export default function Curiosity() {
   const [topics, setTopics] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const randomIndex = (categories) => {
+    return Math.floor(Math.random() * categories.length);
+  };
+
   const dumpAndSave = async () => {
     setModalVisible(!modalVisible);
   };
 
-  const randomIndex = (categories) => {
-    return Math.floor(Math.random() * categories.length);
+  const shareDB = async () => {
+    const dbPath = await ctx.dumpDB();
+
+    show(dbPath);
+
+    const compressedPath = await compressBackup(dbPath);
+    //await shareAsync(compressedPath);
   };
 
   useAsyncEffect(async () => {
@@ -247,26 +258,81 @@ export default function Curiosity() {
         }}
       >
         <View style={css.modalCenteredView}>
-          <View style={css.modalViewBig}>
-            <Text
+          <View
+            style={{
+              height: "85%",
+              width: "95%",
+              backgroundColor: "white",
+              borderRadius: 20,
+              borderTopLeftRadius: 0,
+              borderTopRightRadius: 0,
+              padding: 20,
+              alignItems: "left",
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <View style={{ marginBottom: 20 }}>
+              <Text
+                style={{
+                  fontFamily: "Corben_400Regular",
+                  fontSize: 20,
+                  lineHeight: 30,
+                  textAlign: "center",
+                  color: "#4d769f",
+                }}
+              >
+                Export your data to another device
+              </Text>
+            </View>
+
+            <View
               style={{
-                fontFamily: "Corben_400Regular",
-                fontSize: 20,
-                lineHeight: 30,
-                textAlign: "left",
-                color: "#4d769f",
+                flexGap: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-around",
               }}
             >
-              Export your learning data
-            </Text>
-            <TouchableOpacity
-              style={[css.modalButton, { marginTop: 20 }]}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={css.modalButtonText}>
-                {ctx.discipleName === "en" ? "More" : "Ver Más"}
+              <Text
+                style={{
+                  fontFamily: "Corben_400Regular",
+                  fontSize: 18,
+                  lineHeight: 30,
+                  textAlign: "left",
+                  color: "#4d769f",
+                }}
+              >
+                1. Download your data
               </Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  borderTopRightRadius: 15,
+                  borderBottomRightRadius: 15,
+                  elevation: 1,
+                  backgroundColor: "#b147ff99",
+                  paddingHorizontal: 15,
+                  paddingVertical: 7,
+                }}
+                onPress={async () => await shareDB()}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Corben_400Regular",
+                    fontSize: 18,
+                    color: "white",
+                  }}
+                >
+                  here
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

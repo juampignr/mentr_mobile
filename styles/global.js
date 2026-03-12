@@ -230,7 +230,6 @@ const css = {
     elevation: 5,
   },
   modalViewBig: {
-    margin: 20,
     height: "85%",
     width: "95%",
     backgroundColor: "white",
@@ -238,7 +237,7 @@ const css = {
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     padding: 20,
-    alignItems: "center",
+    alignItems: "left",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

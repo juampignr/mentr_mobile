@@ -40,7 +40,7 @@ export default function Layout() {
   };
 
   const dumpDB = async function () {
-    const backupDir = new Directory(Paths.document, "mentr_user_data");
+    const backupDir = new Directory(Paths.cache, "mentr_backup");
 
     backupDir.create({ idempotent: true, intermediates: true });
 
