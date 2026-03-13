@@ -154,6 +154,7 @@ export default function Layout() {
     <Context.Provider
       value={{
         db: db,
+        setDB: setDB,
         dumpDB: dumpDB,
         chain: chain,
         setChain: setChain,

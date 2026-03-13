@@ -9,12 +9,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { shareAsync } from "expo-sharing";
 import { compressBackup, decompressBackup } from "../libraries/Compress";
+import { File } from "expo-file-system";
 
 import PillsView from "../components/PillsView";
 import Pill from "../components/Pill";
 import chalk from "chalk";
 import logo from "../assets/images/icon.png";
 import css from "../styles/global.js";
+import { openDatabaseAsync } from "expo-sqlite";
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -82,22 +84,60 @@ export default function Curiosity() {
 
   const [topics, setTopics] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [dumpLocation, setDumpLocation] = useState(false);
+  const [downloadTitle, setDownloadTitle] = useState(
+    "Export your data to another device",
+  );
+  const [downloadExplanation, setDownloadExplanation] = useState(
+    "A backup of all your progress will be saved to your device:",
+  );
 
   const randomIndex = (categories) => {
     return Math.floor(Math.random() * categories.length);
   };
 
   const dumpAndSave = async () => {
+    setDownloadTitle("Export your data to another device");
+    setDownloadExplanation(
+      "A backup of all your progress will be saved to your device:",
+    );
     setModalVisible(!modalVisible);
   };
 
-  const shareDB = async () => {
+  const loadAndSave = async () => {
+    setDownloadTitle("Import your data from another device");
+    setDownloadExplanation(
+      "Select a backup file from your device to restore your progress:",
+    );
+    setModalVisible(!modalVisible);
+  };
+
+  const exportDB = async () => {
     const dbPath = await ctx.dumpDB();
 
-    show(dbPath);
-
     const compressedPath = await compressBackup(dbPath);
+
+    setDumpLocation(compressedPath);
     //await shareAsync(compressedPath);
+  };
+
+  const importDB = async () => {
+    const decompressedPath = await decompressBackup();
+    const dbFile = new File(decompressedPath);
+
+    show(`Decompressed path: ${decompressedPath}`);
+    show(`Old DB path: ${ctx.db.databasePath}`);
+
+    const oldDbPath = new File(`file://${ctx.db.databasePath}`);
+
+    await ctx.db.closeAsync();
+
+    show(`Moving ${dbFile.uri} to ${oldDbPath.uri}`);
+    oldDbPath.delete();
+    dbFile.move(oldDbPath);
+
+    ctx.setDB(await openDatabaseAsync(oldDbPath.uri));
+    //await ctx.db.openAsync(dbFile.uri);
   };
 
   useAsyncEffect(async () => {
@@ -241,10 +281,22 @@ export default function Curiosity() {
           backgroundColor: "white",
         }}
       >
+        <TouchableOpacity onPress={loadAndSave} style={{ alignSelf: "right" }}>
+          <FontAwesome6
+            style={{ color: "#242424cc" }}
+            name="upload"
+            size={30}
+          />
+        </TouchableOpacity>
+
         <Image source={logo} style={{ width: 50, height: 50 }} />
 
         <TouchableOpacity onPress={dumpAndSave}>
-          <FontAwesome6 style={{ color: "#242424cc" }} name="share" size={30} />
+          <FontAwesome6
+            style={{ color: "#242424cc" }}
+            name="download"
+            size={30}
+          />
         </TouchableOpacity>
       </View>
       <PillsView>{topics}</PillsView>
@@ -255,6 +307,7 @@ export default function Curiosity() {
         visible={modalVisible}
         onRequestClose={() => {
           setModalVisible(false);
+          setDumpLocation(false);
         }}
       >
         <View style={css.modalCenteredView}>
@@ -288,7 +341,7 @@ export default function Curiosity() {
                   color: "#4d769f",
                 }}
               >
-                Export your data to another device
+                {downloadTitle}
               </Text>
             </View>
 
@@ -307,17 +360,21 @@ export default function Curiosity() {
                   color: "#4d769f",
                 }}
               >
-                A backup of all your progress will be saved to your device:
+                {downloadExplanation}
               </Text>
               <TouchableOpacity
                 style={{
                   borderRadius: 15,
                   elevation: 1,
-                  backgroundColor: "#b147ff99",
+                  backgroundColor: "#b147ff",
                   paddingHorizontal: 15,
                   paddingVertical: 7,
                 }}
-                onPress={async () => await shareDB()}
+                onPress={async () =>
+                  downloadTitle.includes("Export")
+                    ? await exportDB()
+                    : await importDB()
+                }
               >
                 <Text
                   style={{
@@ -327,9 +384,20 @@ export default function Curiosity() {
                     textAlign: "center",
                   }}
                 >
-                  Download
+                  Let's go!
                 </Text>
               </TouchableOpacity>
+              {dumpLocation && (
+                <Text
+                  style={{
+                    fontFamily: "Corben_400Regular",
+                    fontSize: 18,
+                    color: "#ffa020",
+                  }}
+                >
+                  Yay! your progress has been setup...
+                </Text>
+              )}
             </View>
           </View>
         </View>

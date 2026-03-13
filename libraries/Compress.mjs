@@ -1,5 +1,6 @@
 import { gzipSync, gunzipSync } from "fflate";
-import { File, Directory } from "expo-file-system";
+import { File, Directory, Paths } from "expo-file-system";
+import { getDocumentAsync } from "expo-document-picker";
 
 export async function compressBackup(sourcePath, destPath) {
   const dbFile = new File(sourcePath);
@@ -17,33 +18,39 @@ export async function compressBackup(sourcePath, destPath) {
 
   const outFile = pickedDir.createFile("mentr.db.gz", "application/x-gzip");
 
-  console.log(destPath.uri);
-
   outFile.write(compressedBytes);
 
   return outFile.uri;
 }
 
-export async function decompressBackup(dbPath) {
-  const gzFile = new File(dbPath);
+export async function decompressBackup() {
+  const result = await getDocumentAsync({
+    type: ["application/gzip", "application/x-gzip", "*/*"],
+    copyToCacheDirectory: true,
+    multiple: false,
+  });
+
+  if (result.canceled) {
+    throw new Error("User cancelled file selection");
+  }
+
+  const picked = result.assets[0];
+  const gzFile = new File(picked.uri);
 
   if (!gzFile.exists) {
-    throw new Error(`Compressed backup not found: ${gzPath}`);
+    throw new Error(`Selected file not found: ${picked.uri}`);
   }
 
   const compressedBytes = await gzFile.bytes();
   const dbBytes = gunzipSync(compressedBytes);
 
-  const outPath = gzPath.endsWith(".gz") ? gzPath.slice(0, -3) : `${gzPath}.db`;
+  const restoreDir = new Directory(Paths.cache, "mentr_restore");
+  restoreDir.create({ idempotent: true, intermediates: true });
 
-  const outFile = new File(outPath);
-
-  if (outFile.exists) {
-    outFile.delete();
-  }
-
-  outFile.create();
+  const outFile = new File(restoreDir, "mentr.db");
+  outFile.create({ overwrite: true });
   outFile.write(dbBytes);
 
-  return outPath;
+  console.log(outFile.uri);
+  return outFile.uri;
 }
