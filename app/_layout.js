@@ -44,7 +44,7 @@ export default function Layout() {
 
     backupDir.create({ idempotent: true, intermediates: true });
 
-    const sourceDb = await SQLite.openDatabaseAsync("mentr.db");
+    const sourceDb = db ? db : await SQLite.openDatabaseAsync("mentr.db");
     const destDb = await SQLite.openDatabaseAsync(
       "mentr-backup.db",
       {},

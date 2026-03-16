@@ -113,8 +113,6 @@ export default function Curiosity() {
   };
 
   const exportDB = async () => {
-    await ctx.db.closeAsync();
-
     const dbPath = await ctx.dumpDB();
 
     const compressedPath = await compressBackup(dbPath);
@@ -134,13 +132,11 @@ export default function Curiosity() {
 
     const oldDbPath = new File(`file://${ctx.db.databasePath}`);
 
-    await ctx.db.closeAsync();
-
     show(`Moving ${dbFile.uri} to ${oldDbPath.uri}`);
     oldDbPath.delete();
     dbFile.move(oldDbPath);
 
-    ctx.setDB(await openDatabaseAsync(oldDbPath.uri));
+    ctx.setDB(await openDatabaseAsync("mentr.db"));
     //await ctx.db.openAsync(dbFile.uri);
   };
 
