@@ -126,12 +126,21 @@ export default function Medium() {
           timeSpent *
           (ctx.clickedSections.current.size / ctx.allSections.current);
         if (selectResult) {
-          const insertResult = ctx.db.runSync(
-            `UPDATE interest SET spent = spent + ${estimatedSpent} WHERE id = '${selectResult.id}'`,
+          const insertResult = await ctx.db.runAsync(
+            `UPDATE interest SET spent = spent + ? WHERE id = ?`,
+            [estimatedSpent, selectResult.id],
           );
         } else {
-          const insertResult = ctx.db.runSync(
-            `INSERT OR IGNORE INTO interest (id,disciple_email,name,spent,chain) VALUES ('${randomUUID()}', 'juampi.gnr@gmail.com', '${topic}', ${estimatedSpent}, '${firstTopic}')`,
+          const insertResult = await ctx.db.runAsync(
+            `INSERT OR IGNORE INTO interest (id, disciple_email, name, spent, chain)
+             VALUES (?, ?, ?, ?, ?)`,
+            [
+              randomUUID(),
+              "juampi.gnr@gmail.com",
+              topic,
+              estimatedSpent,
+              firstTopic,
+            ],
           );
         }
       };

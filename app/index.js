@@ -113,6 +113,8 @@ export default function Curiosity() {
   };
 
   const exportDB = async () => {
+    await ctx.db.closeAsync();
+
     const dbPath = await ctx.dumpDB();
 
     const compressedPath = await compressBackup(dbPath);
@@ -122,6 +124,8 @@ export default function Curiosity() {
   };
 
   const importDB = async () => {
+    await ctx.db.closeAsync();
+
     const decompressedPath = await decompressBackup();
     const dbFile = new File(decompressedPath);
 
