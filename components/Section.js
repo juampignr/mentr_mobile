@@ -38,10 +38,11 @@ export default function Section({ children }) {
         document.querySelectorAll("a").forEach((link) => {
           link.addEventListener("click", function (e) {
             e.preventDefault();
+            const url = e.currentTarget.getAttribute("href");
             window.ReactNativeWebView.postMessage(
               JSON.stringify({
                 type: "linkClicked",
-                url: this.href,
+                url: url
               }),
             );
           });

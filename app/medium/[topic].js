@@ -109,33 +109,18 @@ export default function Medium() {
           [topic]: prevChain[topic] ? prevChain[topic] + timeSpent : timeSpent,
         }));
 
-        const selectResult = ctx.db.getFirstSync(
-          `SELECT * FROM interest WHERE disciple_email = 'juampi.gnr@gmail.com' AND name = '${topic}'`,
-        );
+        console.log("### Chain already set ###");
+        console.log(chain);
 
-        /* Query on shallow
-        const allInterests = ctx.db.getAllSync(
-          `SELECT chain,name,spent FROM interest WHERE disciple_email = 'juampi.gnr@gmail.com'`,
-        );
-
-
-        const allInterests = ctx.db.getAllSync(
-          `SELECT
-            disciple.email AS disciple,
-            interest.name AS topic,
-            interest.spent AS spent,
-            interest.chain AS firstTopic
-          FROM
-            disciple
-          INNER JOIN
-            interest
-          ON
-            disciple.email = interest.disciple_email
-          WHERE
-            interest.chain = '${topic}'
-          ORDER BY interest.spent DESC;`,
-        );
-        */
+        let selectResult;
+        try {
+          selectResult = ctx.db.getFirstSync(
+            `SELECT * FROM interest WHERE disciple_email = 'juampi.gnr@gmail.com' AND name = '${topic}'`,
+          );
+        } catch (error) {
+          console.log(error);
+          // Best effort here
+        }
 
         const estimatedSpent =
           timeSpent *

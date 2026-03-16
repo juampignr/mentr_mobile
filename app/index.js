@@ -253,6 +253,8 @@ export default function Curiosity() {
 
         setTopics(shuffledPills);
       } else {
+        console.log(await ctx.db.getAllAsync("SELECT * FROM interest"));
+
         const orderedTopics = orderedInterests.map((element) => (
           <Pill>{element?.chain}</Pill>
         ));

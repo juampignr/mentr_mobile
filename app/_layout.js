@@ -64,9 +64,11 @@ export default function Layout() {
   useAsyncEffect(async () => {
     const dbInstance = await SQLite.openDatabaseAsync("mentr.db");
 
+    /*
+    PRAGMA journal_mode = WAL;
+    */
     await dbInstance.execAsync(
       `
-      PRAGMA journal_mode = WAL;
       PRAGMA foreign_keys = ON;
 
       CREATE TABLE IF NOT EXISTS disciple (
@@ -126,6 +128,7 @@ export default function Layout() {
 
     //await db.current.execAsync(`DROP TABLE IF EXISTS interest`);
     //await db.current.execAsync(`DROP TABLE IF EXISTS disciple`);
+    //await db.current.execAsync(`DROP TABLE IF EXISTS mentor`);
 
     alert(
       `INSERT OR IGNORE INTO disciple VALUES ('juampi.gnr@gmail.com','${firstLocale}','Juan Pablo Behler','pbkdf2_sha256$100000$');`,
