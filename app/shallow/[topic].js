@@ -215,34 +215,34 @@ export default function Shallow() {
     setIsLoading(false);
 
     let allData;
-    /*
-    let allData = [
-      {
-        id: topicData.pageid.toString(),
-        title: topicData.title,
-        summary: topicData.extract,
-      },
-      ...formattedData,
-    ];
-    */
 
     allData = {
       ...formattedData,
     };
 
-    const allInterests = await ctx.db.getAllAsync(
-      `SELECT name
-      FROM
-        interest
-      WHERE
-        chain = '${topic}'
-      ORDER BY spent DESC
-      `,
-    );
+    let allInterests = [];
+
+    try {
+      allInterests = await ctx.db.getAllAsync(
+        `SELECT name
+        FROM
+          interest
+        WHERE
+          chain = '${topic}'
+        ORDER BY spent DESC
+        `,
+      );
+    } catch (error) {
+      // Do something later here
+    }
+
+    console.log("### Related chain ###");
+
+    console.log(allInterests);
 
     let combinedAllData = [];
 
-    for (const interest of allInterests.reverse()) {
+    for (const interest of allInterests?.reverse()) {
       const interestURL = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
       const response = await fetch(interestURL, {
         headers: {
@@ -251,18 +251,18 @@ export default function Shallow() {
       });
 
       let interestData = await response?.json();
-      interestData = Object.values(interestData.query.pages)[0];
+      interestData = Object.values(interestData?.query?.pages)[0];
 
       if (interestData?.extract) {
-        if (allData[interestData.pageid.toString()]) {
-          delete allData[interestData.pageid.toString()];
+        if (allData[interestData?.pageid.toString()]) {
+          delete allData[interestData?.pageid.toString()];
         }
 
         combinedAllData = [
           {
-            id: interestData.pageid.toString(),
-            title: interestData.title,
-            summary: interestData.extract.trim(),
+            id: interestData?.pageid.toString(),
+            title: interestData?.title,
+            summary: interestData?.extract.trim(),
           },
           ...combinedAllData,
         ];
@@ -432,14 +432,14 @@ export default function Shallow() {
           `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
           {
             headers: {
-              "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+              "User-Agent": "Mentr/0.9.0",
             },
           },
         );
 
         const data = await response.json();
 
-        queryResult = data[1]; // The second element contains the list of suggestions
+        queryResult = data[1];
 
         if (queryResult.length <= 10) {
           const extraResponse = await fetch(
