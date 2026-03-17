@@ -38,7 +38,12 @@ export default function Layout() {
     clearTimeout(timeoutId.current);
     setStatus("loading");
     timeoutId.current = setTimeout(() => {
-      setStatus({ action: "search", value: change });
+      if (change.length) {
+        setLastMatrix({});
+        setInterestChain({});
+        hasMentored.current = 0;
+        setStatus({ action: "search", value: change });
+      }
     }, 2000);
   };
 
