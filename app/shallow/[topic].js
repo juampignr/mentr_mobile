@@ -173,6 +173,7 @@ export default function Shallow() {
   };
 
   const initialize = async () => {
+    console.log("Initializing View...");
     const topicURL = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(topic)}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
@@ -281,12 +282,30 @@ export default function Shallow() {
     currentPosition.current = 1;
   };
 
+  const initializeMentoring = () => {
+    let allInterests = [];
+    for (const key in ctx.interestChain) {
+      allInterests.push({
+        id: key,
+        title: ctx.interestChain[key].title,
+        summary: ctx.interestChain[key].summary,
+      });
+    }
+
+    ctx.hasMentored.current = 1;
+
+    ctx.setLastMatrix(cardsMatrix);
+    setCardsMatrix({ 0: allInterests });
+    currentPosition.current = 1;
+    //setIsLoading(false);
+  };
+
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        if (hasMentored.current === 1) {
-          setCardsMatrix(lastMatrix.current);
-          hasMentored.current = 0;
+        if (ctx.hasMentored.current === 1) {
+          setCardsMatrix(ctx.lastMatrix);
+          ctx.hasMentored.current = 0;
           return true;
         }
         return false;
@@ -301,7 +320,13 @@ export default function Shallow() {
     }, []),
   );
 
-  useAsyncEffect(initialize, []);
+  useAsyncEffect(async () => {
+    if (!ctx.hasMentored.current) {
+      await initialize();
+    } else {
+      initializeMentoring();
+    }
+  }, []);
 
   useAsyncEffect(async () => {
     let viewsArray = [];
@@ -315,7 +340,7 @@ export default function Shallow() {
           onMomentumScrollBegin={() => setMomentum(1)}
           onMomentumScrollEnd={() => setMomentum(0)}
           renderItem={(item) => (
-            <Card firstTopic={topic} isMentoring={hasMentored.current}>
+            <Card firstTopic={topic} isMentoring={ctx.hasMentored.current}>
               {item}
             </Card>
           )}
@@ -403,21 +428,8 @@ export default function Shallow() {
       ctx.setStatus("loading");
       ctx.setLoadingText("Showing the way...");
 
-      let allInterests = [];
-      for (const key in ctx.interestChain) {
-        allInterests.push({
-          id: key,
-          title: ctx.interestChain[key].title,
-          summary: ctx.interestChain[key].summary,
-        });
-      }
+      initializeMentoring();
 
-      hasMentored.current = 1;
-
-      lastMatrix.current = cardsMatrix;
-      setCardsMatrix({ 0: allInterests });
-      currentPosition.current = 1;
-      //setIsLoading(false);
       setTimeout(() => {
         ctx.setStatus("");
         ctx.setLoadingText(false);

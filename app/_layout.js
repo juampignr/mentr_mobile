@@ -26,7 +26,10 @@ export default function Layout() {
   const [discipleLanguage, setDiscipleLanguage] = useState("en");
 
   const [interestChain, setInterestChain] = useState({});
+  const [lastMatrix, setLastMatrix] = useState({});
+
   const [db, setDB] = useState({});
+  const hasMentored = useRef(0);
 
   const clickedSections = useRef(new Set());
   const allSections = useRef(1);
@@ -173,9 +176,12 @@ export default function Layout() {
         interestChain: interestChain,
         setInterestChain: setInterestChain,
         clickedSections: clickedSections,
+        lastMatrix: lastMatrix,
+        setLastMatrix: setLastMatrix,
         allSections: allSections,
         loadingText: loadingText,
         setLoadingText: setLoadingText,
+        hasMentored: hasMentored,
       }}
     >
       <View style={css.body}>
