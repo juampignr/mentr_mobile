@@ -115,14 +115,12 @@ export default function Layout() {
     let firstLocale;
 
     if (dbLanguage?.language) {
-      console.log("Found language:", dbLanguage.language);
       firstLocale = dbLanguage.language;
     } else {
       const locales = getLocales();
 
       if (Array.isArray(locales) && locales.length) {
         firstLocale = getLocales()[0];
-        alert(JSON.stringify(firstLocale));
 
         if (firstLocale.languageCode.length <= 3) {
           firstLocale = firstLocale.languageCode;
@@ -130,17 +128,12 @@ export default function Layout() {
           firstLocale = "en";
         }
       }
-
-      console.log("No language found, locale:", firstLocale);
     }
 
     //await db.current.execAsync(`DROP TABLE IF EXISTS interest`);
     //await db.current.execAsync(`DROP TABLE IF EXISTS disciple`);
     //await db.current.execAsync(`DROP TABLE IF EXISTS mentor`);
 
-    alert(
-      `INSERT OR IGNORE INTO disciple VALUES ('juampi.gnr@gmail.com','${firstLocale}','Juan Pablo Behler','pbkdf2_sha256$100000$');`,
-    );
     await dbInstance.runAsync(
       `INSERT OR IGNORE INTO disciple VALUES ('juampi.gnr@gmail.com','${firstLocale}','Juan Pablo Behler','pbkdf2_sha256$100000$');`,
     );

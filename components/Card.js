@@ -72,10 +72,6 @@ export default function Card({ children, firstTopic, isMentoring }) {
 
     setCardTitleStyle(css.cardTitlePlus);
 
-    console.log(
-      `Calling mentor method with firstTopic: ${firstTopic}, db: ${ctx.db}, disciple: ${ctx.disciple}, discipleLanguage: ${ctx.discipleLanguage}`,
-    );
-
     const gandalf = new Mentor(
       firstTopic,
       ctx.db,

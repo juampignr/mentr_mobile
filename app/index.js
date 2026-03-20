@@ -127,12 +127,8 @@ export default function Curiosity() {
     const decompressedPath = await decompressBackup();
     const dbFile = new File(decompressedPath);
 
-    show(`Decompressed path: ${decompressedPath}`);
-    show(`Old DB path: ${ctx.db.databasePath}`);
-
     const oldDbPath = new File(`file://${ctx.db.databasePath}`);
 
-    show(`Moving ${dbFile.uri} to ${oldDbPath.uri}`);
     oldDbPath.delete();
     dbFile.move(oldDbPath);
 
@@ -253,14 +249,10 @@ export default function Curiosity() {
 
         setTopics(shuffledPills);
       } else {
-        console.log(await ctx.db.getAllAsync("SELECT * FROM interest"));
-
         const orderedTopics = orderedInterests.map((element) => (
           <Pill>{element?.chain}</Pill>
         ));
         setTopics(orderedTopics);
-
-        console.log(await ctx.dumpDB(ctx.db));
       }
     }
   }, [ctx.db]);

@@ -14,8 +14,6 @@ export async function compressBackup(sourcePath, destPath) {
 
   const pickedDir = await Directory.pickDirectoryAsync();
 
-  console.log(pickedDir.uri);
-
   const outFile = pickedDir.createFile("mentr.db.gz", "application/x-gzip");
 
   outFile.write(compressedBytes);
@@ -51,6 +49,5 @@ export async function decompressBackup() {
   outFile.create({ overwrite: true });
   outFile.write(dbBytes);
 
-  console.log(outFile.uri);
   return outFile.uri;
 }

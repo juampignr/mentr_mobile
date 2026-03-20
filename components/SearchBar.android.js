@@ -21,11 +21,9 @@ export default function SearchBar({ children, onType }) {
 
   useEffect(() => {
     const hideKeyboard = Keyboard.addListener("keyboardDidHide", () => {
-      console.log("Hiding keyboard");
       setVerticalOffset(-30);
     });
     const showKeyboard = Keyboard.addListener("keyboardDidShow", () => {
-      console.log("Showing keyboard");
       setVerticalOffset(-50);
     });
 

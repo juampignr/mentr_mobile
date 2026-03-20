@@ -109,9 +109,6 @@ export default function Medium() {
           [topic]: prevChain[topic] ? prevChain[topic] + timeSpent : timeSpent,
         }));
 
-        console.log("### Chain already set ###");
-        console.log(chain);
-
         let selectResult;
         try {
           selectResult = ctx.db.getFirstSync(
@@ -159,8 +156,6 @@ export default function Medium() {
     };
 
     const result = await wiki.getPage(topic);
-
-    console.log(result);
 
     setSummary(!result[0]?.section ? result[0] : result[1]);
 

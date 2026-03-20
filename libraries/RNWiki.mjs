@@ -87,7 +87,6 @@ export default class RNWiki {
     responseLinks = response.links.map((link) => link.title);
     response = response.extract;
 
-    show(response);
     response = response.split(/[=]{1,2}\s*[a-zA-Z]*\s*[=]{1,2}/gm);
 
     for (const link of responseLinks) {
@@ -101,7 +100,6 @@ export default class RNWiki {
       }
     }
 
-    show(response);
     let lastPartType = "content";
     let lastPartContent = "start";
 
@@ -185,7 +183,6 @@ export default class RNWiki {
             parsedFormulaPart = formulaPart.replace(/\.\n+/g, ".<br><br>");
           }
 
-          show(parsedResponse);
           parsedResponse.push(parsedFormulaPart);
         }
 

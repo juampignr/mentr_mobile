@@ -52,10 +52,10 @@ export default function Shallow() {
   ctx.setTopic(topic);
 
   const searchTopic = async (topic) => {
-    const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=100&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+        "User-Agent": "Mentr/1.0.0", // required by Wikipedia API
       },
     });
 
@@ -78,8 +78,13 @@ export default function Shallow() {
     let scopedRelated = [];
 
     /*
-    if (currentPosition.current >= pageno) {
-      show("Going backwards, not populating");
+    if (cardsMatrix[currentPosition.current - 1]?.length >= pageno) {
+
+      setCardsMatrix((oldMatrix) => ({
+        [pageno - 1]: oldMatrix[pageno - 1],
+        [pageno]: oldMatrix[pageno],
+      }));
+
       return;
     }
     */
@@ -89,17 +94,17 @@ export default function Shallow() {
     const topicURL = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${scopedRelated[pageno]?.title}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
-        "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+        "User-Agent": "Mentr/1.0.0", // required by Wikipedia API
       },
     });
 
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
-    const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno]?.title)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno]?.title)}&gsrlimit=100&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+        "User-Agent": "Mentr/1.0.0", // required by Wikipedia API
       },
     });
 
@@ -135,28 +140,6 @@ export default function Shallow() {
       ],
     }));
 
-    /*
-    if (formattedData[0]?.title !== scopedRelated[pageno]?.title) {
-      setCardsMatrix(
-        (oldMatrix) =>
-          (oldMatrix = {
-            ...oldMatrix,
-            [pageno]: [
-              {
-                id: topicData.pageid,
-                title: topicData.title,
-                summary: topicData.extract,
-              },
-              ...formattedData,
-            ],
-          }),
-      );
-    } else {
-      setCardsMatrix(
-        (oldMatrix) => (oldMatrix = { ...oldMatrix, [pageno]: formattedData }),
-      );
-    }
-    */
     setPageNumber(pageno + 1);
   };
 
@@ -173,21 +156,20 @@ export default function Shallow() {
   };
 
   const initialize = async () => {
-    console.log("Initializing View...");
     const topicURL = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(topic)}&format=json&origin=*`;
     const topicResponse = await fetch(topicURL, {
       headers: {
-        "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+        "User-Agent": "Mentr/1.0.0", // required by Wikipedia API
       },
     });
 
     let topicData = await topicResponse.json();
     topicData = Object.values(topicData.query.pages)[0];
 
-    const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=200&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+    const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=100&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+        "User-Agent": "Mentr/1.0.0", // required by Wikipedia API
       },
     });
 
@@ -237,17 +219,13 @@ export default function Shallow() {
       // Do something later here
     }
 
-    console.log("### Related chain ###");
-
-    console.log(allInterests);
-
     let combinedAllData = [];
 
     for (const interest of allInterests?.reverse()) {
       const interestURL = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
       const response = await fetch(interestURL, {
         headers: {
-          "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+          "User-Agent": "Mentr/1.0.0", // required by Wikipedia API
         },
       });
 
@@ -357,11 +335,11 @@ export default function Shallow() {
 
       const updatedSwipeableView = swipeableView;
 
-      const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=200&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
+      const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=100&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
 
       const response = await fetch(url, {
         headers: {
-          "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+          "User-Agent": "Mentr/1.0.0", // required by Wikipedia API
         },
       });
 
@@ -444,7 +422,7 @@ export default function Shallow() {
           `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
           {
             headers: {
-              "User-Agent": "Mentr/0.9.0",
+              "User-Agent": "Mentr/1.0.0",
             },
           },
         );
@@ -458,7 +436,7 @@ export default function Shallow() {
             `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${queryResult[1]}&limit=20&namespace=0&format=json&origin=*`,
             {
               headers: {
-                "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
+                "User-Agent": "Mentr/1.0.0", // required by Wikipedia API
               },
             },
           );
