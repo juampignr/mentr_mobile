@@ -29,10 +29,13 @@ export default function Layout() {
   const [lastMatrix, setLastMatrix] = useState({});
 
   const [db, setDB] = useState({});
-  const hasMentored = useRef(0);
+  const [wiki, setWiki] = useState({});
 
+  const hasMentored = useRef(0);
   const clickedSections = useRef(new Set());
   const allSections = useRef(1);
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const typeHandler = (change) => {
     clearTimeout(timeoutId.current);
@@ -67,6 +70,97 @@ export default function Layout() {
     });
 
     return destDb.databasePath;
+  };
+
+  const wikiFetch = async function (searchTerm, params = null, attempt = 0) {
+    const maxRetries = 3;
+
+    try {
+      const url = new URL(
+        `https://${discipleLanguage}.wikipedia.org/w/api.php?format=json&origin=*`,
+      );
+
+      if (!params && searchTerm) {
+        url.searchParams.set("action", "query");
+        url.searchParams.set("generator", "search");
+        url.searchParams.set("gsrsearch", searchTerm);
+        url.searchParams.set("gsrlimit", "50");
+        url.searchParams.set("prop", "extracts");
+        url.searchParams.set("exintro", "true");
+        url.searchParams.set("explaintext", "true");
+        url.searchParams.set("exsentences", "3");
+        url.searchParams.set("maxlag", "5");
+      } else {
+        const safeParams =
+          params && typeof params === "object" && !Array.isArray(params)
+            ? params
+            : {};
+
+        for (const [key, value] of Object.entries(safeParams)) {
+          if (typeof value === "string") url.searchParams.set(key, value);
+        }
+
+        if (!url.searchParams.has("maxlag")) {
+          url.searchParams.set("maxlag", "5");
+        }
+      }
+
+      const response = await fetch(url.toString(), {
+        headers: {
+          "Api-User-Agent": "Mentr/1.0.0",
+        },
+      });
+
+      let data;
+
+      try {
+        data = await response.json();
+      } catch (error) {
+        throw new Error(
+          `Invalid JSON response, please tune your request: HTTP ${response.status}`,
+        );
+      }
+
+      if (!response.ok) {
+        const retryAfter = response.headers.get("retry-after");
+        const err = new Error(`HTTP error ${response.status}`);
+        err.status = response.status;
+        err.retryAfter = retryAfter ? Number(retryAfter) : null;
+        throw err;
+      }
+
+      if (data?.error) {
+        const err = new Error(
+          `Wiki API error: ${data.error.code} - ${data.error.info}`,
+        );
+        err.code = data.error.code;
+        err.retryAfter = response.headers.get("retry-after")
+          ? Number(response.headers.get("retry-after"))
+          : null;
+        throw err;
+      }
+
+      return data;
+    } catch (error) {
+      const retryable =
+        error?.status >= 429 ||
+        error?.code === "maxlag" ||
+        error?.code === "ratelimited";
+
+      if (!retryable || attempt >= maxRetries) {
+        return {
+          status: "error",
+          error: error?.message || "Unknown error",
+        };
+      }
+
+      const serverDelay = !Number.isNaN(error.retryAfter)
+        ? error.retryAfter * 1000
+        : 1000;
+
+      await sleep(serverDelay);
+      return wikiFetch(searchTerm, params, attempt + 1);
+    }
   };
 
   useAsyncEffect(async () => {
