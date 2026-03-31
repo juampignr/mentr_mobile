@@ -99,6 +99,18 @@ export default function Shallow() {
     });
 
     let topicData = await topicResponse.json();
+
+    /*
+    let topicData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
+      action: "query",
+      prop: "extracts",
+      exintro: true,
+      explaintext: true,
+      exsentences: 3,
+      titles: scopedRelated[pageno]?.title,
+    });
+*/
+    console.log(topicData.query.pages);
     topicData = Object.values(topicData.query.pages)[0];
 
     const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(scopedRelated[pageno]?.title)}&gsrlimit=100&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
@@ -110,7 +122,22 @@ export default function Shallow() {
 
     const data = await response.json();
 
-    let pages = Object.values(data.query.pages).filter((page) => page.extract);
+    /*
+    const data = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
+      action: "query",
+      generator: "search",
+      gsrsearch: encodeURIComponent(scopedRelated[pageno]?.title),
+      gsrlimit: 50,
+      prop: "extracts",
+      exintro: true,
+      explaintext: true,
+      exsentences: 3,
+    });
+    */
+    console.log(data);
+    let pages = Object.values(topicData.query.pages).filter(
+      (page) => page.extract,
+    );
 
     pages = pages.filter((page) => page.extract);
 

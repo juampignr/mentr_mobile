@@ -35,6 +35,8 @@ export default function Layout() {
   const clickedSections = useRef(new Set());
   const allSections = useRef(1);
 
+  const timeSemaphore = useRef(false);
+
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const typeHandler = (change) => {
@@ -72,7 +74,18 @@ export default function Layout() {
     return destDb.databasePath;
   };
 
-  const wikiFetch = async function (searchTerm, params = null, attempt = 0) {
+  const wikiFetch = async (searchTerm, params = null, attempt = 0) => {
+    while (timeSemaphore.current) {
+      await sleep(300);
+    }
+
+    timeSemaphore.current = true;
+    const result = await _wikiFetch(searchTerm, params, attempt);
+    timeSemaphore.current = false;
+    return result;
+  };
+
+  const _wikiFetch = async function (searchTerm, params = null, attempt = 0) {
     const maxRetries = 3;
 
     try {
@@ -80,7 +93,7 @@ export default function Layout() {
         `https://${discipleLanguage}.wikipedia.org/w/api.php?format=json&origin=*`,
       );
 
-      if (!params && searchTerm) {
+      if (!params) {
         url.searchParams.set("action", "query");
         url.searchParams.set("generator", "search");
         url.searchParams.set("gsrsearch", searchTerm);
@@ -107,7 +120,7 @@ export default function Layout() {
 
       const response = await fetch(url.toString(), {
         headers: {
-          "Api-User-Agent": "Mentr/1.0.0",
+          "User-Agent": "Mentr/1.0.0",
         },
       });
 
@@ -142,28 +155,36 @@ export default function Layout() {
 
       return data;
     } catch (error) {
-      const retryable =
-        error?.status >= 429 ||
-        error?.code === "maxlag" ||
-        error?.code === "ratelimited";
+      console.log(`Error[${error?.code}] while fetching wiki: ${error}`);
+
+      const retryable = error.retryAfter !== null;
 
       if (!retryable || attempt >= maxRetries) {
         return {
           status: "error",
           error: error?.message || "Unknown error",
         };
+      } else {
+        const serverDelay = !Number.isNaN(error.retryAfter)
+          ? error.retryAfter * 1000
+          : 1000;
+
+        console.log(`Attempt #${attempt} with backoff of ${serverDelay}ms`);
+
+        await sleep(serverDelay);
+        return wikiFetch(searchTerm, params, attempt + 1);
       }
-
-      const serverDelay = !Number.isNaN(error.retryAfter)
-        ? error.retryAfter * 1000
-        : 1000;
-
-      await sleep(serverDelay);
-      return wikiFetch(searchTerm, params, attempt + 1);
     }
   };
 
   useAsyncEffect(async () => {
+    /*
+    setInterval(() => {
+      console.log(`clearing timeSemaphore`);
+      timeSemaphore.current = false;
+    }, 1000);
+    */
+
     const dbInstance = await SQLite.openDatabaseAsync("mentr.db");
 
     /*
@@ -274,6 +295,7 @@ export default function Layout() {
         loadingText: loadingText,
         setLoadingText: setLoadingText,
         hasMentored: hasMentored,
+        wikiFetch: wikiFetch,
       }}
     >
       <View style={css.body}>
