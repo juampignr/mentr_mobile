@@ -88,6 +88,7 @@ export default function Layout() {
   const _wikiFetch = async function (searchTerm, params = null, attempt = 0) {
     const maxRetries = 3;
 
+    console.log(`Receiving searchTerm: ${encodeURIComponent(searchTerm)}`);
     try {
       const url = new URL(
         `https://${discipleLanguage}.wikipedia.org/w/api.php?format=json&origin=*`,
@@ -96,7 +97,7 @@ export default function Layout() {
       if (!params) {
         url.searchParams.set("action", "query");
         url.searchParams.set("generator", "search");
-        url.searchParams.set("gsrsearch", searchTerm);
+        url.searchParams.set("gsrsearch", encodeURIComponent(searchTerm));
         url.searchParams.set("gsrlimit", "50");
         url.searchParams.set("prop", "extracts");
         url.searchParams.set("exintro", "true");
@@ -110,7 +111,7 @@ export default function Layout() {
             : {};
 
         for (const [key, value] of Object.entries(safeParams)) {
-          if (typeof value === "string") url.searchParams.set(key, value);
+          url.searchParams.set(key, String(value));
         }
 
         if (!url.searchParams.has("maxlag")) {
@@ -124,6 +125,7 @@ export default function Layout() {
         },
       });
 
+      console.log(response);
       let data;
 
       try {
@@ -155,7 +157,7 @@ export default function Layout() {
 
       return data;
     } catch (error) {
-      console.log(`Error[${error?.code}] while fetching wiki: ${error}`);
+      console.log(error);
 
       const retryable = error.retryAfter !== null;
 
