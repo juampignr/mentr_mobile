@@ -1,2 +1,2 @@
 # mentr_mobile
-Mentr is an app for self taught learning
+Mentr is an app to guide people in learning autodidactly

@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "Mentr",
+    "slug": "mentr",
+    "version": "0.5.2",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "your-app-scheme",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "versionCode":1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/splash-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.jpbehler.mentr"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-router",
+      "expo-sqlite",
+      "expo-localization",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200
+        }
+      ],
+      "expo-image",
+      "expo-sharing",
+      "expo-status-bar"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "734c8262-b538-4d74-b8ed-d69e5cbcc0d6"
+      }
+    }
+  }
+}

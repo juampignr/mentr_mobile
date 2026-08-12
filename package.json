@@ -1,0 +1,52 @@
+{
+  "name": "mentr",
+  "version": "0.9.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@expo-google-fonts/corben": "^0.2.3",
+    "@expo/vector-icons": "^15.0.2",
+    "@react-hook/async": "^3.1.1",
+    "axios": "^1.7.0",
+    "chalk": "^5.4.1",
+    "eas": "^0.1.0",
+    "expo": "^56.0.8",
+    "expo-blur": "~56.0.3",
+    "expo-constants": "~56.0.16",
+    "expo-crypto": "~56.0.4",
+    "expo-document-picker": "~56.0.4",
+    "expo-file-system": "~56.0.7",
+    "expo-font": "~56.0.5",
+    "expo-image": "~56.0.9",
+    "expo-linking": "~56.0.13",
+    "expo-localization": "~56.0.6",
+    "expo-router": "~56.2.8",
+    "expo-sharing": "~56.0.15",
+    "expo-splash-screen": "~56.0.10",
+    "expo-sqlite": "~56.0.4",
+    "expo-status-bar": "~56.0.4",
+    "fflate": "^0.8.2",
+    "fix": "^0.0.6",
+    "katex": "^0.16.23",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-html-parser": "^0.1.0",
+    "react-native-keyboard-aware-scroll-view": "^0.9.5",
+    "react-native-pager-view": "8.0.1",
+    "react-native-reanimated": "4.3.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "4.25.2",
+    "react-native-webview": "13.16.1",
+    "react-native-worklets": "0.8.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.0"
+  },
+  "private": true
+}
