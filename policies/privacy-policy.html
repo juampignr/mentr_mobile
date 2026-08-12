@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy - Mentr</title>
+<style>
+  :root {
+    --text: #242424;
+    --muted: #5a5a5a;
+    --accent: #4d769f;
+    --border: #e2e2e2;
+    --bg: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+  h1 {
+    font-size: 1.9rem;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 40px;
+  }
+  h2 {
+    font-size: 1.2rem;
+    margin-top: 40px;
+    margin-bottom: 12px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+  p, li {
+    font-size: 0.98rem;
+    color: var(--text);
+  }
+  ul {
+    padding-left: 22px;
+  }
+  li {
+    margin-bottom: 8px;
+  }
+  .callout {
+    background: #f7f9fb;
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 4px;
+    margin: 20px 0;
+    font-size: 0.95rem;
+  }
+  a {
+    color: var(--accent);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: #f7f9fb;
+    font-weight: 600;
+  }
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+
+  <h1>Privacy Policy</h1>
+  <p class="subtitle">Mentr &mdash; Self-taught learning &nbsp;|&nbsp; Last updated: August 12, 2026</p>
+
+  <p>
+    This Privacy Policy explains how Mentr ("the app," "we," "our") handles information
+    when you use it. Mentr is developed and maintained by J.P. Behler ("the developer," "I").
+  </p>
+
+  <div class="callout">
+    <strong>In short:</strong> Mentr does not currently require an account, does not use
+    analytics, advertising, or crash-reporting services, and does not transmit your
+    personal data to any server operated by the developer. Your learning history is stored
+    only on your device. A future version may ask for an email address purely to generate
+    a local identifier on your device (see Section 2) &mdash; this would not create a
+    cloud account or send your data anywhere. The only external service Mentr currently
+    communicates with is the Wikipedia/Wikimedia API, which is used to retrieve public
+    encyclopedia content.
+  </div>
+
+  <h2>1. Information We Do Not Collect</h2>
+  <p>Mentr does not require you to create an account, sign in, or provide any personal
+    information such as your name, email address, or phone number in order to use the app.
+    We do not integrate any third-party analytics, advertising, or crash-reporting software
+    development kits (SDKs). We do not use cookies, advertising identifiers, or tracking
+    technologies of any kind.</p>
+
+  <h2>2. Possible Future Use of Email Address</h2>
+  <p>Mentr does not currently ask for or use an email address. However, a future version
+    of the app may ask you to provide an email address for the limited purpose of
+    generating a unique identifier (such as a primary key or UUID) within the app's local
+    SQLite database. This identifier would be used only to distinguish your local records
+    from one another on-device (for example, if the app later supports multiple local
+    profiles) and would not, by itself, create a cloud-based account, be transmitted to any
+    server, or be shared with any third party.</p>
+  <p>If this feature is introduced, this Privacy Policy will be updated in advance to
+    describe it in full, and the "Last updated" date above will reflect that change.</p>
+
+  <h2>3. Information Stored On Your Device</h2>
+  <p>To provide its core feature &mdash; suggesting topics based on what you've explored
+    &mdash; Mentr stores certain information locally on your device, using a local SQLite
+    database (via <code>expo-sqlite</code>). This includes:</p>
+  <ul>
+    <li>The topics and Wikipedia articles you've viewed or shown interest in</li>
+    <li>Basic usage metrics tied to those topics (e.g. how much time or attention was
+      spent on a topic), used only to shape future topic suggestions</li>
+  </ul>
+  <p>This information is stored exclusively on your device. It is never automatically
+    transmitted to the developer, to Google, or to any third party. We have no server, and
+    no ability to view, access, or collect this data remotely.</p>
+
+  <h2>4. Manual Backup &amp; Restore</h2>
+  <p>Mentr includes an optional feature that lets you export a backup of your local
+    database to a file, and later import it (for example, to move your learning history to
+    a new device). When you use this feature:</p>
+  <ul>
+    <li>The backup file is created entirely on your device.</li>
+    <li>You choose where the file goes using your device's native share sheet (for
+      example, saving it to cloud storage you control, or sending it via a messaging app of
+      your choice).</li>
+    <li>The developer does not receive, store, process, or have any access to this file at
+      any point. The transfer destination is entirely under your control.</li>
+  </ul>
+
+  <h2>5. Data Sent to Third Parties</h2>
+  <p>Mentr retrieves article content, summaries, and related topics from the public
+    <strong>Wikipedia Action API</strong>, operated by the Wikimedia Foundation. When you
+    search for or view a topic, the topic name or search term is sent to Wikimedia's servers
+    over HTTPS in order to fetch the relevant content. No other information about you (such
+    as a device identifier or account information, since none exists) is attached to these
+    requests beyond what is standard for any web request (e.g. IP address, as received by
+    Wikimedia's own infrastructure).</p>
+  <p>This data exchange is governed by the
+    <a href="https://foundation.wikimedia.org/wiki/Policy:Privacy_policy" target="_blank" rel="noopener">Wikimedia Foundation's own Privacy Policy</a>,
+    which we encourage you to review. The developer has no access to, and does not receive
+    copies of, the requests made between your device and Wikimedia's servers.</p>
+
+  <h2>6. Framework &amp; Platform Components</h2>
+  <p>Mentr is built using the Expo framework and its associated libraries (including
+    <code>expo-sqlite</code>, <code>expo-image</code>, <code>expo-sharing</code>,
+    <code>expo-font</code>, <code>expo-localization</code>, and
+    <code>expo-splash-screen</code>). These components run locally on your device to
+    provide core app functionality &mdash; such as rendering images, handling fonts,
+    detecting your device's language, and enabling the manual backup/share feature &mdash;
+    and do not, on their own, transmit personal data to the developer.</p>
+
+  <h2>7. Data Retention &amp; Deletion</h2>
+  <p>Because all app data is stored locally, you are always in control of it:</p>
+  <ul>
+    <li><strong>To delete all Mentr data:</strong> uninstall the app, or clear its storage
+      through your device's Settings &gt; Apps &gt; Mentr &gt; Storage &gt; Clear Data.
+      This immediately and permanently deletes your local learning history, as no copy
+      exists anywhere else.</li>
+    <li>Since Mentr has no account system, there is no separate account or server-side
+      data for the developer to delete on your behalf &mdash; deleting the app or its
+      local storage is equivalent to a full account deletion.</li>
+  </ul>
+
+  <h2>8. Children's Privacy</h2>
+  <p>Mentr is intended for a general audience and is not directed at children under the
+    age of 13. We do not knowingly collect personal information from children, and given
+    that the app collects no personal information from any user, this applies equally
+    regardless of age.</p>
+
+  <h2>9. Security</h2>
+  <p>All communication between Mentr and the Wikipedia Action API occurs over encrypted
+    HTTPS connections. Since your learning history never leaves your device unless you
+    explicitly export it yourself, its security is primarily governed by your own device's
+    security (e.g. screen lock, encryption at rest provided by your operating system).</p>
+
+  <h2>10. Changes to This Policy</h2>
+  <p>We may update this Privacy Policy from time to time, for example to reflect new app
+    features or changes in applicable law. The "Last updated" date at the top of this page
+    will reflect the most recent revision. Continued use of Mentr after changes are posted
+    constitutes acceptance of the updated policy.</p>
+
+  <h2>11. Contact</h2>
+  <p>If you have questions, concerns, or requests regarding this Privacy Policy or how
+    Mentr handles data, please contact:</p>
+  <p>
+    J.P. Behler<br>
+    <a href="mailto:mentrargentina@gmail.com">mentrargentina@gmail.com</a>
+  </p>
+
+  <footer>
+    &copy; 2026 J.P. Behler &mdash; Mentr. This document is provided as the official
+    Privacy Policy for the Mentr application listed on Google Play under package identifier
+    <code>com.jpbehler.mentr</code>.
+  </footer>
+
+</body>
+</html>
