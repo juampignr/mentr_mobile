@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import { useAsyncEffect } from "@react-hook/async";
 import { Link } from "expo-router";
 import { Context } from "./_layout.js";
-import { View, TouchableOpacity, Modal, Pressable, Text } from "react-native";
+import { View, TouchableOpacity, Modal, Text } from "react-native";
 import { WebView } from "react-native-webview";
 import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -10,13 +10,14 @@ import { FontAwesome6 } from "@expo/vector-icons";
 import { shareAsync } from "expo-sharing";
 import { compressBackup, decompressBackup } from "../libraries/Compress";
 import { File } from "expo-file-system";
-
+import { openDatabaseAsync } from "expo-sqlite";
 import PillsView from "../components/PillsView";
 import Pill from "../components/Pill";
 import chalk from "chalk";
 import logo from "../assets/images/icon.png";
 import css from "../styles/global.js";
-import { openDatabaseAsync } from "expo-sqlite";
+import * as Sentry from '@sentry/react-native';
+
 
 let show = (arg) => {
   switch (typeof arg) {
@@ -171,6 +172,10 @@ export default function Curiosity() {
     }
   }, [ctx.status]);
 
+  useEffect(() => {
+    //Sentry.showFeedbackWidget();
+  }, []);
+
   useAsyncEffect(async () => {
     if (Object.keys(ctx.db).length) {
       const orderedInterests = await ctx.db.getAllAsync(
@@ -274,7 +279,9 @@ export default function Curiosity() {
           />
         </TouchableOpacity>
 
-        <Image source={logo} style={{ width: 50, height: 50 }} />
+        <TouchableOpacity onPress={() => { Sentry.showFeedbackWidget() }}>
+          <Image source={logo} style={{ width: 50, height: 50 }} />
+        </TouchableOpacity>
 
         <TouchableOpacity onPress={dumpAndSave}>
           <FontAwesome6

@@ -10,10 +10,40 @@ import { File, Paths, Directory } from "expo-file-system";
 import css from "../styles/global.js";
 import SearchBar from "../components/SearchBar";
 import * as SQLite from "expo-sqlite";
+import * as Sentry from '@sentry/react-native';
+
+Sentry.init({
+  dsn: 'https://b8ba7db798f1262aeab871ba1b102afb@o4511911001980928.ingest.us.sentry.io/4511911009517568',
+
+  // Adds more context data to events (IP address, cookies, user, etc.)
+  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+  sendDefaultPii: true,
+
+  // Enable Logs
+  enableLogs: true,
+
+  // Configure Session Replay
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1,
+  integrations: [
+      Sentry.feedbackIntegration({
+        // Additional SDK configuration goes in here, for example:
+        styles: {
+          submitButton: {
+            backgroundColor: "#6a1b9a",
+          },
+        },
+        namePlaceholder: "Fullname",
+
+      }),
+    ],
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+});
 
 export const Context = createContext();
 
-export default function Layout() {
+export default Sentry.wrap(function Layout() {
   const timeoutId = useRef(0);
 
   const [chain, setChain] = useState({});
@@ -304,4 +334,6 @@ export default function Layout() {
       <SearchBar onType={typeHandler} />
     </Context.Provider>
   );
-}
+});
+
+Sentry.showFeedbackWidget();
