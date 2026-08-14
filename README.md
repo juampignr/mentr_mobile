@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/images/icon_google_play.png" width="120" alt="Mentr icon" />
+<img src="./assets/icon_google_play.png" width="120" alt="Mentr icon" />
 
 # Mentr
 
@@ -17,7 +17,7 @@ Traditional education floods you with information regardless of what you're actu
 No courses. No curricula. Just you, Wikipedia, and wherever your curiosity takes you.
 
 <div align="center">
-<img src="./assets/images/0philosophy.png" width="220" alt="Philosophy" />
+<img src="./assets/images/0-philosophy.png" width="220" alt="Philosophy" />
 </div>
 
 ## How it works
@@ -31,7 +31,7 @@ Start with any topic you're interested in — Mentr surfaces the most relevant W
 
 </td>
 <td width="50%">
-<img src="./assets/images/1search.png" width="220" alt="Search" />
+<img src="./assets/images/1-search.png" width="220" alt="Search" />
 </td>
 </tr>
 <tr>
@@ -42,7 +42,7 @@ Move through related topics naturally. Mentr tracks what you linger on and quiet
 
 </td>
 <td width="50%">
-<img src="./assets/images/2swipe.png" width="220" alt="Swipe and scroll" />
+<img src="./assets/images/2-swipe.png" width="220" alt="Swipe and scroll" />
 </td>
 </tr>
 <tr>
@@ -53,7 +53,7 @@ Any topic can open into its full Wikipedia article, right inside the app.
 
 </td>
 <td width="50%">
-<img src="./assets/images/3article.png" width="220" alt="Article view" />
+<img src="./assets/images/3-article.png" width="220" alt="Article view" />
 </td>
 </tr>
 <tr>
@@ -64,7 +64,7 @@ Stuck, or want a different direction? Long-press a topic and Mentr digs through 
 
 </td>
 <td width="50%">
-<img src="./assets/images/4guide.png" width="220" alt="Hidden link discovery" />
+<img src="./assets/images/4-guide.png" width="220" alt="Hidden link discovery" />
 </td>
 </tr>
 </table>
