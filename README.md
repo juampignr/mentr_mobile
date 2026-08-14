@@ -4,7 +4,7 @@
 
 # Mentr
 
-**A Wikipedia explorer for people who learn by wandering.**
+**A Wikipedia explorer for self-taught**
 
 </div>
 
