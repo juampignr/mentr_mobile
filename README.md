@@ -4,7 +4,7 @@
 
 # Mentr
 
-**A Wikipedia explorer for self-taught**
+**Learn freely without instructions. A learning app with a philosophy in mind.**
 
 </div>
 
