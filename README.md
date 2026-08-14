@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/icon_google_play.png" width="120" alt="Mentr icon" />
+<img src="./assets/icon_google_play.png" width="120" alt="Mentr icon" style="border-radius: 15px;"  />
 
 # Mentr
 
@@ -9,17 +9,6 @@
 </div>
 
 ---
-
-## Learning should be guided, not instructed.
-
-Traditional education floods you with information regardless of what you're actually curious about. Inspired by John Dewey's philosophy of *facilitated* (not instructed) learning, Mentr lets you follow your own intuition — moving from the general to the particular, one topic at a time.
-
-No courses. No curricula. Just you, Wikipedia, and wherever your curiosity takes you.
-
-<div align="center">
-<img src="./assets/images/0-philosophy.png" width="220" alt="Philosophy" />
-</div>
-
 ## How it works
 
 <table>
