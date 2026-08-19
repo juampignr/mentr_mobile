@@ -40,6 +40,7 @@
     "react-native": "0.85.3",
     "react-native-html-parser": "^0.1.0",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
+    "react-native-onboarding-swiper": "^1.4.0",
     "react-native-pager-view": "8.0.1",
     "react-native-reanimated": "4.3.1",
     "react-native-safe-area-context": "~5.7.0",
