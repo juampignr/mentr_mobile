@@ -61,6 +61,8 @@ export default Sentry.wrap(function Layout() {
   const [db, setDB] = useState({});
   const [wiki, setWiki] = useState({});
 
+  const [isOnboarding, setIsOnboarding] = useState(false);
+
   const hasMentored = useRef(0);
   const clickedSections = useRef(new Set());
   const allSections = useRef(1);
@@ -273,6 +275,8 @@ export default Sentry.wrap(function Layout() {
           firstLocale = "en";
         }
       }
+
+      setIsOnboarding(true);
     }
 
     //await db.current.execAsync(`DROP TABLE IF EXISTS interest`);
@@ -326,6 +330,8 @@ export default Sentry.wrap(function Layout() {
         setLoadingText: setLoadingText,
         hasMentored: hasMentored,
         wikiFetch: wikiFetch,
+        isOnboarding: isOnboarding,
+        setIsOnboarding: setIsOnboarding,
       }}
     >
       <View style={css.body}>
@@ -335,5 +341,3 @@ export default Sentry.wrap(function Layout() {
     </Context.Provider>
   );
 });
-
-Sentry.showFeedbackWidget();
