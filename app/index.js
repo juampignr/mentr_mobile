@@ -17,7 +17,6 @@ import chalk from "chalk";
 import logo from "../assets/images/icon.png";
 import css from "../styles/global.js";
 import * as Sentry from '@sentry/react-native';
-import Onboarding from 'react-native-onboarding-swiper';
 
 
 
@@ -256,19 +255,9 @@ export default function Curiosity() {
     }
   }, [ctx.db]);
 
+
   return (
     <>
-      {ctx?.isOnboarding && (<Onboarding
-        pages={[
-          {
-            backgroundColor: '#fff',
-            image: <Image source={import('../assets/images/icon.png').src} />,
-            title: 'Onboarding',
-            subtitle: 'Done with React Native Onboarding Swiper',
-          },
-        ]}
-      />)}
-
       <View
         style={{
           position: "absolute",
@@ -285,6 +274,7 @@ export default function Curiosity() {
           backgroundColor: "white",
         }}
       >
+
         <TouchableOpacity onPress={loadAndSave} style={{ alignSelf: "right" }}>
           <FontAwesome6
             style={{ color: "#242424cc" }}
@@ -305,6 +295,7 @@ export default function Curiosity() {
           />
         </TouchableOpacity>
       </View>
+
       <PillsView>{topics}</PillsView>
 
       <Modal

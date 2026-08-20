@@ -1,16 +1,26 @@
-import { View, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet,TouchableOpacity, Text } from "react-native";
 import { createContext, useEffect, useState, useRef } from "react";
 import { useAsyncEffect } from "@react-hook/async";
 import { useFonts, Corben_400Regular } from "@expo-google-fonts/corben";
 import { Slot } from "expo-router";
 import { getLocales } from "expo-localization";
 import { File, Paths, Directory } from "expo-file-system";
-
-//import wiki from "wikipedia"
+import { Image } from "expo-image";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import css from "../styles/global.js";
 import SearchBar from "../components/SearchBar";
 import * as SQLite from "expo-sqlite";
 import * as Sentry from '@sentry/react-native';
+import Onboarding from 'react-native-onboarding-swiper';
+import onboardingStepOne from "../assets/images/onboardingStepOne.png";
+import onboardingStepTwo from "../assets/images/onboardingStepTwo.png";
+import onboardingStepThree from "../assets/images/onboardingStepThree.png";
+import onboardingStepFour from "../assets/images/onboardingStepFour.png";
+import onboardingStepOneSpa from "../assets/images/onboardingStepOneSpa.png";
+import onboardingStepTwoSpa from "../assets/images/onboardingStepTwoSpa.png";
+import onboardingStepThreeSpa from "../assets/images/onboardingStepThreeSpa.png";
+import onboardingStepFourSpa from "../assets/images/onboardingStepFourSpa.png";
+import searchImage from "../assets/images/1-search.png";
 
 Sentry.init({
   dsn: 'https://b8ba7db798f1262aeab871ba1b102afb@o4511911001980928.ingest.us.sentry.io/4511911009517568',
@@ -54,6 +64,7 @@ export default Sentry.wrap(function Layout() {
   const [topic, setTopic] = useState("");
   const [disciple, setDisciple] = useState("juampi.gnr@gmail.com");
   const [discipleLanguage, setDiscipleLanguage] = useState("en");
+  const [buttonsText, setButtonsText] = useState({ en: { next: "Next", done: "Done", skip: "Skip" }, es: { next: "Siguiente", done: "Listo", skip: "Saltar" } });
 
   const [interestChain, setInterestChain] = useState({});
   const [lastMatrix, setLastMatrix] = useState({});
@@ -63,11 +74,14 @@ export default Sentry.wrap(function Layout() {
 
   const [isOnboarding, setIsOnboarding] = useState(false);
 
+
   const hasMentored = useRef(0);
   const clickedSections = useRef(new Set());
   const allSections = useRef(1);
 
   const timeSemaphore = useRef(false);
+
+  const insets = useSafeAreaInsets();
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -209,6 +223,33 @@ export default Sentry.wrap(function Layout() {
     }
   };
 
+  const SkipButton = (props) => (
+    <TouchableOpacity
+        {...props}
+        style={css.buttonSkip}
+      >
+        <Text style={[css.pillText, {color: "#b147ff88"}]}>{buttonsText.skip}</Text>
+      </TouchableOpacity>
+  );
+
+  const NextButton = (props) => (
+    <TouchableOpacity
+        {...props}
+        style={css.buttonRight}
+      >
+      <Text style={css.pillText}>{buttonsText.next}</Text>
+      </TouchableOpacity>
+  );
+
+  const DoneButton = (props) => (
+    <TouchableOpacity
+        {...props}
+        style={css.buttonDone}
+      >
+        <Text style={css.pillText}>{buttonsText.done}</Text>
+      </TouchableOpacity>
+  );
+
   useAsyncEffect(async () => {
     /*
     setInterval(() => {
@@ -219,7 +260,8 @@ export default Sentry.wrap(function Layout() {
 
     const dbInstance = await SQLite.openDatabaseAsync("mentr.db");
 
-    /*
+    /*const insets = useSafeAreaInsets();
+
     PRAGMA journal_mode = WAL;
     */
     await dbInstance.execAsync(
@@ -263,6 +305,8 @@ export default Sentry.wrap(function Layout() {
 
     if (dbLanguage?.language) {
       firstLocale = dbLanguage.language;
+      setIsOnboarding(false);
+
     } else {
       const locales = getLocales();
 
@@ -279,6 +323,7 @@ export default Sentry.wrap(function Layout() {
       setIsOnboarding(true);
     }
 
+    setButtonsText(buttonsText[firstLocale])
     //await db.current.execAsync(`DROP TABLE IF EXISTS interest`);
     //await db.current.execAsync(`DROP TABLE IF EXISTS disciple`);
     //await db.current.execAsync(`DROP TABLE IF EXISTS mentor`);
@@ -334,10 +379,39 @@ export default Sentry.wrap(function Layout() {
         setIsOnboarding: setIsOnboarding,
       }}
     >
-      <View style={css.body}>
-        <Slot />
-      </View>
-      <SearchBar onType={typeHandler} />
+      {isOnboarding ? (<Onboarding
+        SkipButtonComponent={SkipButton}
+        NextButtonComponent={NextButton}
+        DoneButtonComponent={DoneButton}
+        bottomBarHighlight={false}
+        bottomBarHeight={75 + insets.bottom}
+        onSkip={() => setIsOnboarding(false)}
+        onDone={() => setIsOnboarding(false)}
+        pages={[
+          {
+            backgroundColor: 'ghostwhite',
+            image: <Image source={discipleLanguage === 'es' ? onboardingStepOneSpa : onboardingStepOne} style={{ height: "100%", width: "100%" }} />,
+          },
+          {
+            backgroundColor: 'ghostwhite',
+            image: <Image source={discipleLanguage === 'es' ? onboardingStepTwoSpa : onboardingStepTwo} style={{ height: "100%", width: "100%" }} />,
+          },
+          {
+            backgroundColor: 'ghostwhite',
+            image: <Image source={discipleLanguage === 'es' ? onboardingStepThreeSpa : onboardingStepThree} style={{ height: "100%", width: "100%" }} />,
+          },
+          {
+            backgroundColor: 'ghostwhite',
+            image: <Image source={discipleLanguage === 'es' ? onboardingStepFourSpa : onboardingStepFour} style={{ height: "100%", width: "100%" }} />,
+          },
+        ]}
+      />) :
+      <><View style={css.body}>
+          <Slot />
+        </View>
+        <SearchBar onType={typeHandler} />
+      </>}
+
     </Context.Provider>
   );
 });
