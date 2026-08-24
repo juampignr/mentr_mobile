@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mentr",
     "slug": "mentr",
-    "version": "0.6.1",
+    "version": "0.7.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "your-app-scheme",

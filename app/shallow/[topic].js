@@ -48,7 +48,7 @@ export default function Shallow() {
 
   const { topic } = useLocalSearchParams();
 
-  ctx.setTopic(topic);
+  ctx?.setTopic(topic);
 
   const searchTopic = async (topic) => {
     const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=100&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
@@ -76,132 +76,134 @@ export default function Shallow() {
   const populateCards = async (pageno) => {
     let scopedRelated = [];
 
-    scopedRelated = cardsMatrix["0"];
+    if(Object.keys(cardsMatrix).length) {
+      scopedRelated = cardsMatrix["0"];
 
-    let topicData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
-      action: "query",
-      prop: "extracts|categories",
-      exintro: true,
-      explaintext: true,
-      exsentences: 3,
-      titles: scopedRelated[pageno]?.title,
-    });
+      let topicData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
+        action: "query",
+        prop: "extracts|categories",
+        exintro: true,
+        explaintext: true,
+        exsentences: 3,
+        titles: scopedRelated[pageno]?.title,
+      });
 
-    let topicCategories =
-      Object.values(topicData.query.pages)[0]?.categories ?? [];
+      let topicCategories =
+        Object.values(topicData.query.pages)[0]?.categories ?? [];
 
-    topicCategories = topicCategories.filter((category) => {
-      const categoryNoise = [
-        /\bstub/i,
-        /^Category:All /i,
-        /^Category:Articles (with|containing|needing)/i,
-        /^Category:Pages (with|using)/i,
-        /^Category:Wikipedia /i,
-        /^Category:CS1 /i,
-        /^Category:Short description/i,
-        /^Category:Commons category/i,
-        /^Category:Use (mdy|dmy) dates/i,
-      ];
-      return !categoryNoise.some((re) => re.test(category?.title));
-    });
+      topicCategories = topicCategories.filter((category) => {
+        const categoryNoise = [
+          /\bstub/i,
+          /^Category:All /i,
+          /^Category:Articles (with|containing|needing)/i,
+          /^Category:Pages (with|using)/i,
+          /^Category:Wikipedia /i,
+          /^Category:CS1 /i,
+          /^Category:Short description/i,
+          /^Category:Commons category/i,
+          /^Category:Use (mdy|dmy) dates/i,
+        ];
+        return !categoryNoise.some((re) => re.test(category?.title));
+      });
 
-    let categoryData = await ctx.wikiFetch(topicCategories[0]?.title, {
-      action: "query",
-      generator: "categorymembers",
-      gcmtitle: topicCategories[0]?.title, // g prefix
-      gcmnamespace: "0", // g prefix
-      gcmlimit: "50", // g prefix
-      prop: "extracts",
-      exintro: true,
-      explaintext: true,
-      exsentences: 3,
-    });
+      let categoryData = await ctx.wikiFetch(topicCategories[0]?.title, {
+        action: "query",
+        generator: "categorymembers",
+        gcmtitle: topicCategories[0]?.title, // g prefix
+        gcmnamespace: "0", // g prefix
+        gcmlimit: "50", // g prefix
+        prop: "extracts",
+        exintro: true,
+        explaintext: true,
+        exsentences: 3,
+      });
 
-    categoryData = categoryData?.query?.pages;
+      categoryData = categoryData?.query?.pages;
 
-    let linksData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
-      action: "query",
-      generator: "links",
-      titles: scopedRelated[pageno]?.title,
-      gplnamespace: "0",
-      gpllimit: "50",
-      prop: "extracts",
-      exintro: true,
-      explaintext: true,
-      exsentences: 3,
-    });
+      let linksData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
+        action: "query",
+        generator: "links",
+        titles: scopedRelated[pageno]?.title,
+        gplnamespace: "0",
+        gpllimit: "50",
+        prop: "extracts",
+        exintro: true,
+        explaintext: true,
+        exsentences: 3,
+      });
 
-    linksData = linksData?.query?.pages;
+      linksData = linksData?.query?.pages;
 
-    let linksHereData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
-      action: "query",
-      generator: "linkshere",
-      titles: scopedRelated[pageno]?.title,
-      gplnamespace: "0",
-      gpllimit: "50",
-      prop: "extracts",
-      exintro: true,
-      explaintext: true,
-      exsentences: 3,
-    });
+      let linksHereData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
+        action: "query",
+        generator: "linkshere",
+        titles: scopedRelated[pageno]?.title,
+        gplnamespace: "0",
+        gpllimit: "50",
+        prop: "extracts",
+        exintro: true,
+        explaintext: true,
+        exsentences: 3,
+      });
 
-    linksHereData = linksHereData?.query?.pages;
+      linksHereData = linksHereData?.query?.pages;
 
-    console.log(categoryData);
-    let data = new Map([
-      ...Object.entries(categoryData),
-      ...Object.entries(linksData),
-      ...Object.entries(linksHereData),
-    ]);
+      console.log(categoryData);
+      let data = new Map([
+        ...Object.entries(categoryData),
+        ...Object.entries(linksData),
+        ...Object.entries(linksHereData),
+      ]);
 
-    data = Object.fromEntries(data);
-    data = Object.values(data);
-    /*
-    const data = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
-      action: "query",
-      generator: "search",
-      gsrsearch: scopedRelated[pageno]?.title,
-      gsrlimit: 50,
-      prop: "extracts",
-      exintro: true,
-      explaintext: true,
-      exsentences: 3,
-    });
-    */
-    console.log(data);
+      data = Object.fromEntries(data);
+      data = Object.values(data);
+      /*
+      const data = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
+        action: "query",
+        generator: "search",
+        gsrsearch: scopedRelated[pageno]?.title,
+        gsrlimit: 50,
+        prop: "extracts",
+        exintro: true,
+        explaintext: true,
+        exsentences: 3,
+      });
+      */
+      console.log(data);
 
-    let pages = data.filter((page) => page.extract);
+      let pages = data.filter((page) => page.extract);
 
-    let formattedData = pages.map((page) => ({
-      id: page.pageid.toString(),
-      title: page?.title,
-      summary: page.extract?.trim(),
-    }));
+      let formattedData = pages.map((page) => ({
+        id: page.pageid.toString(),
+        title: page?.title,
+        summary: page.extract?.trim(),
+      }));
 
-    /*
-    if (data?.continue) {
-      const newCardsMatrixLimits = cardsMatrixLimits;
+      /*
+      if (data?.continue) {
+        const newCardsMatrixLimits = cardsMatrixLimits;
 
-      newCardsMatrixLimits[currentPosition.current] =
-        data?.continue?.excontinue;
-      setCardsMatrixLimits(newCardsMatrixLimits);
+        newCardsMatrixLimits[currentPosition.current] =
+          data?.continue?.excontinue;
+        setCardsMatrixLimits(newCardsMatrixLimits);
+      }
+      */
+
+      topicData = Object.values(topicData.query.pages)[0];
+      setCardsMatrix((oldMatrix) => ({
+        ...oldMatrix,
+        [pageno]: [
+          {
+            id: topicData.pageid,
+            title: topicData.title,
+            summary: topicData.extract.trim(),
+          },
+          ...formattedData,
+        ],
+      }));
+
+      setPageNumber(pageno + 1);
     }
-    */
-
-    topicData = Object.values(topicData.query.pages)[0];
-    setCardsMatrix((oldMatrix) => ({
-      ...oldMatrix,
-      [pageno]: [
-        {
-          id: topicData.pageid,
-          title: topicData.title,
-          summary: topicData.extract.trim(),
-        },
-        ...formattedData,
-      ],
-    }));
-
-    setPageNumber(pageno + 1);
   };
 
   const onSwipe = async (event) => {
@@ -490,32 +492,13 @@ export default function Shallow() {
       try {
         setIsSearching(true);
 
-        const response = await fetch(
-          `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
-          {
-            headers: {
-              "User-Agent": "Mentr/1.0.0",
-            },
-          },
-        );
+        const data = await ctx.wikiFetch(ctx.status?.value, {
+          action: "opensearch",
+          search: ctx.status?.value,
+          namespace: "0",
+        });
 
-        const data = await response.json();
-
-        queryResult = data[1];
-
-        if (queryResult.length <= 10) {
-          const extraResponse = await fetch(
-            `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${queryResult[1]}&limit=20&namespace=0&format=json&origin=*`,
-            {
-              headers: {
-                "User-Agent": "Mentr/1.0.0", // required by Wikipedia API
-              },
-            },
-          );
-
-          const extraData = await extraResponse.json();
-          queryResult = [...data[1], ...extraData[1]];
-        }
+        queryResult = data[1]; // The second element contains the list of suggestions
       } catch (error) {
         console.error("Error fetching data from Wikipedia:", error);
       }

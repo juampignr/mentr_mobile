@@ -18,7 +18,10 @@ import Mentor from "../libraries/mentor";
 export default function Card({ children, firstTopic, isMentoring }) {
   const ctx = useContext(Context);
 
-  const [topic, setTopic] = useState(children?.item);
+  let title = children?.item?.title;
+  let summary = children?.item?.summary;
+
+  summary = summary.length >= 400 ? summary.slice(0, 400) + "..." : summary;
 
   const [cardStyle, setCardStyle] = useState(
     isMentoring ? { ...css.card, borderColor: "#ffa020aa" } : css.card,
@@ -90,21 +93,21 @@ export default function Card({ children, firstTopic, isMentoring }) {
   return (
     <Animated.View style={[cardStyle, animatedStyle]}>
       <Link
-        href={`/medium/${encodeURI(firstTopic)}:${encodeURI(topic?.title)}`}
+        href={`/medium/${encodeURI(firstTopic)}:${encodeURI(title)}`}
         asChild
       >
-        <Text style={cardTitleStyle}>{topic?.title}</Text>
+        <Text style={cardTitleStyle}>{title}</Text>
       </Link>
 
       <Link
-        href={`/medium/${encodeURI(firstTopic)}:${encodeURI(topic?.title)}`}
+        href={`/medium/${encodeURI(firstTopic)}:${encodeURI(title)}`}
         asChild
       >
         <Pressable
           onLongPress={() => !isMentoring && pressHandler()}
           delayLongPress={1000}
         >
-          <Text style={css.cardSummary}>{topic?.summary}</Text>
+          <Text style={css.cardSummary}>{summary}</Text>
         </Pressable>
       </Link>
     </Animated.View>

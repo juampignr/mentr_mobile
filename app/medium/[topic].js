@@ -197,32 +197,14 @@ export default function Medium() {
       try {
         setIsSearching(true);
 
-        const response = await fetch(
-          `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${ctx.status?.value}&limit=30&namespace=0&format=json&origin=*`,
-          {
-            headers: {
-              "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
-            },
-          },
-        );
-
-        const data = await response.json();
+        const data = await ctx.wikiFetch(ctx.status?.value, {
+          action: "opensearch",
+          search: ctx.status?.value,
+          namespace: "0",
+        });
 
         queryResult = data[1]; // The second element contains the list of suggestions
 
-        if (queryResult.length <= 10) {
-          const extraResponse = await fetch(
-            `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${queryResult[1]}&limit=20&namespace=0&format=json&origin=*`,
-            {
-              headers: {
-                "User-Agent": "Mentr/0.9.0", // required by Wikipedia API
-              },
-            },
-          );
-
-          const extraData = await extraResponse.json();
-          queryResult = [...data[1], ...extraData[1]];
-        }
       } catch (error) {
         console.error("Error fetching data from Wikipedia:", error);
       }

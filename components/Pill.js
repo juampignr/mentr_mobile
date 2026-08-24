@@ -10,8 +10,8 @@ export default function Pill({ children }) {
   const rawTopic = typeof children === "string" ? children : "";
 
   const topic =
-    rawTopic.length > 20
-      ? `${rawTopic.replace(/_/g, " ").substr(0, 20)}...`
+    rawTopic.length > 30
+      ? `${rawTopic.replace(/_/g, " ").substr(0, 30)}...`
       : rawTopic.replace(/_/g, " ");
 
   return (

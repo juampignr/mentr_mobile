@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { useAsyncEffect } from "@react-hook/async";
 import { Link } from "expo-router";
 import { Context } from "./_layout.js";
@@ -17,8 +17,6 @@ import chalk from "chalk";
 import logo from "../assets/images/icon.png";
 import css from "../styles/global.js";
 import * as Sentry from '@sentry/react-native';
-
-
 
 
 let show = (arg) => {
@@ -91,6 +89,70 @@ export default function Curiosity() {
   const [downloadTitle, setDownloadTitle] = useState(
     "Export your data to another device",
   );
+
+  const defaultTopics = useRef({
+    en: [
+      "Photography",
+      "Environmental science",
+      "Gardening",
+      "Role-playing games",
+      "Creative writing",
+      "Yoga",
+      "Biology",
+      "Calligraphy",
+      "Robotics",
+      "Painting",
+      "Journaling",
+      "Birdwatching",
+      "Sudoku",
+      "Mathematics",
+      "Cooking",
+      "Astronomy",
+      "Chess",
+      "Crafting",
+      "Digital art",
+      "Board games",
+      "Meditation",
+      "Computer programming",
+      "Hiking",
+      "Drawing",
+      "Video games",
+      "Chemistry",
+      "Citizen science",
+      "Playing a musical instrument",
+    ],
+    es: [
+      "Fotografía",
+      "Ciencias ambientales",
+      "Jardinería",
+      "Juego de rol",
+      "Escritura creativa",
+      "Yoga",
+      "Biología",
+      "Caligrafía",
+      "Robótica",
+      "Pintura",
+      "Periodismo",
+      "Observación de aves",
+      "Sudoku",
+      "Matemáticas",
+      "Cocina",
+      "Astronomía",
+      "Ajedrez",
+      "Manualidades",
+      "Arte digital",
+      "Juego de mesa",
+      "Meditación",
+      "Programación",
+      "Senderismo",
+      "Dibujo",
+      "Videojuego",
+      "Química",
+      "Ciencia ciudadana",
+      "Instrumento musical",
+    ],
+  });
+
   const [downloadExplanation, setDownloadExplanation] = useState(
     "A backup of all your progress will be saved to your device:",
   );
@@ -153,15 +215,7 @@ export default function Curiosity() {
 
         queryResult = data[1]; // The second element contains the list of suggestions
 
-        if (queryResult.length <= 10) {
-          const extraData = await ctx.wikiFetch(queryResult[1], {
-            action: "opensearch",
-            search: queryResult[1],
-            namespace: "0",
-          });
-
-          queryResult = [...data[1], ...extraData[1]];
-        }
+        console.log(queryResult)
       } catch (error) {
         console.error("Error fetching data from Wikipedia:", error);
       }
@@ -196,36 +250,7 @@ export default function Curiosity() {
       //alert(JSON.stringify(orderedInterests));
 
       if (!orderedInterests?.length) {
-        let selectedSuggestions = [
-          "Photography",
-          "Environmental science",
-          "Gardening",
-          "Role-playing games",
-          "Creative writing",
-          "Yoga",
-          "Biology",
-          "Calligraphy",
-          "Robotics",
-          "Painting",
-          "Journaling",
-          "Birdwatching",
-          "Sudoku",
-          "Mathematics",
-          "Cooking",
-          "Astronomy",
-          "Chess",
-          "Crafting",
-          "Digital art",
-          "Board games",
-          "Meditation",
-          "Computer programming",
-          "Hiking",
-          "Drawing",
-          "Video games",
-          "Chemistry",
-          "Citizen science",
-          "Playing a musical instrument",
-        ];
+        let selectedSuggestions = defaultTopics.current[ctx.discipleLanguage];
 
         const shuffle = (array) => {
           for (let i = array.length - 1; i > 0; i--) {
