@@ -203,7 +203,8 @@ export default Sentry.wrap(function Layout() {
 
       return data;
     } catch (error) {
-      const retryable = error.retryAfter !== null;
+      const throttleStatus = error.status === 429 || error.status === 503;
+      const retryable = throttleStatus || error.retryAfter !== null;
 
       if (!retryable || attempt >= maxRetries) {
         return {
@@ -211,14 +212,13 @@ export default Sentry.wrap(function Layout() {
           error: error?.message || "Unknown error",
         };
       } else {
-        const serverDelay = !Number.isNaN(error.retryAfter)
-          ? error.retryAfter * 1000
-          : 1000;
+        const serverDelay =
+          error.retryAfter && !Number.isNaN(error.retryAfter)
+            ? error.retryAfter * 1000
+            : 5000; // Wikimedia's own guidance: 5s minimum when Retry-After is absent
 
-        console.log(`Attempt #${attempt} with backoff of ${serverDelay}ms`);
-
-        await sleep(serverDelay);
-        return wikiFetch(searchTerm, params, attempt + 1);
+            await sleep(serverDelay);
+            return _wikiFetch(searchTerm, params, language, attempt + 1);
       }
     }
   };
