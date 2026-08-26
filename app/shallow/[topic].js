@@ -148,7 +148,6 @@ export default function Shallow() {
 
       linksHereData = linksHereData?.query?.pages;
 
-      console.log(categoryData);
       let data = new Map([
         ...Object.entries(categoryData),
         ...Object.entries(linksData),
@@ -169,7 +168,6 @@ export default function Shallow() {
         exsentences: 3,
       });
       */
-      console.log(data);
 
       let pages = data.filter((page) => page.extract);
 
@@ -219,14 +217,26 @@ export default function Shallow() {
   };
 
   const initialize = async () => {
-    let topicData = await ctx.wikiFetch(topic, {
+
+    let topicBody = await ctx.wikiFetch(topic, {
+      action: "query",
+      prop: "extracts",
+      exintro: true,
+      explaintext: true,
+      exsentences: 3,
+      titles: topic,
+    });
+
+    topicBody = Object.values(topicBody.query.pages)[0];
+
+    let topicCategoriesData = await ctx.wikiFetch(topic, {
       action: "query",
       prop: "categories",
       titles: topic,
     });
 
     let topicCategories =
-      Object.values(topicData.query.pages)[0]?.categories ?? [];
+      Object.values(topicCategoriesData.query.pages)[0]?.categories ?? [];
 
     topicCategories = topicCategories.filter((category) => {
       const categoryNoise = [
@@ -243,23 +253,57 @@ export default function Shallow() {
       return !categoryNoise.some((re) => re.test(category?.title));
     });
 
-    const data = await ctx.wikiFetch(topicCategories[0]?.title, {
-      action: "query",
-      generator: "categorymembers",
-      gcmtitle: topicCategories[0]?.title, // g prefix
-      gcmnamespace: "0", // g prefix
-      gcmlimit: "100", // g prefix
-      prop: "extracts",
-      exintro: true,
-      explaintext: true,
-      exsentences: 3,
-    });
+    let topicCategoryMembers;
 
-    let pages = Object.values(data.query.pages).filter((page) => page.extract);
+    if (topicCategories[0]?.title) {
+      topicCategoryMembers = await ctx.wikiFetch(topicCategories[0]?.title, {
+        action: "query",
+        generator: "categorymembers",
+        gcmtitle: topicCategories[0]?.title, // g prefix
+        gcmnamespace: "0", // g prefix
+        gcmlimit: "100", // g prefix
+        prop: "extracts",
+        exintro: true,
+        explaintext: true,
+        exsentences: 3,
+      });
+    }
 
-    pages = pages.filter((page) => page.extract);
+    let pages = Object.values(topicCategoryMembers?.query.pages).filter((page) => page.extract);
 
-    const allData = {};
+    if (pages.length === 0) {
+
+      let linksData = await ctx.wikiFetch(topic, {
+        action: "query",
+        generator: "links",
+        titles: topic,
+        gplnamespace: "0",
+        gpllimit: "50",
+        prop: "extracts",
+        exintro: true,
+        explaintext: true,
+        exsentences: 3,
+      });
+
+      let linksHereData = await ctx.wikiFetch(topic, {
+        action: "query",
+        generator: "linkshere",
+        titles: topic,
+        gplnamespace: "0",
+        gpllimit: "50",
+        prop: "extracts",
+        exintro: true,
+        explaintext: true,
+        exsentences: 3,
+      });
+
+      pages = Object.values({ ...linksData.query.pages, ...linksHereData.query.pages }).filter((page) => page.extract);
+
+      if (pages.length === 0)
+        pages = [topicBody]
+    }
+
+    let allData = {};
 
     for (const page of pages) {
       allData[page?.pageid.toString()] = {
@@ -268,6 +312,8 @@ export default function Shallow() {
       };
     }
 
+    allData = { [topicBody?.pageid.toString()]: { title: topicBody?.title, summary: topicBody?.extract }, ...allData };
+    console.log(allData);
     /*
     if (data?.continue) {
       const newCardsMatrixLimits = cardsMatrixLimits;
@@ -293,11 +339,20 @@ export default function Shallow() {
       );
     } catch (error) {
       console.log("Error fetching interests:");
-      console.log(error);
       // Do something later here
     }
 
     let combinedAllData = [];
+
+    if (allInterests.length === 0 && topicBody?.pageid) {
+      combinedAllData.push({
+        id: topicBody.pageid.toString(),
+        title: topicBody.title,
+        summary: topicBody.extract,
+      });
+
+      delete allData[topicBody.pageid.toString()];
+    }
 
     for (const interest of allInterests) {
       const interestURL = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
@@ -309,7 +364,7 @@ export default function Shallow() {
 
       let interestData = await response?.json();
       interestData = Object.values(interestData?.query?.pages)[0];
-      console.log(interestData);
+
       if (interestData?.extract) {
         if (allData[interestData?.pageid.toString()]) {
           delete allData[interestData?.pageid.toString()];
@@ -327,9 +382,6 @@ export default function Shallow() {
       combinedAllData.push(allData[key]);
     }
 
-    console.log("All data:");
-
-    console.log(combinedAllData);
     setCardsMatrix({ 0: combinedAllData });
     currentPosition.current = 1;
   };

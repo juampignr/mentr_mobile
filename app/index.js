@@ -300,7 +300,7 @@ export default function Curiosity() {
         }}
       >
 
-        <TouchableOpacity onPress={loadAndSave} style={{ alignSelf: "right" }}>
+        <TouchableOpacity onPress={loadAndSave}>
           <FontAwesome6
             style={{ color: "#242424cc" }}
             name="upload"

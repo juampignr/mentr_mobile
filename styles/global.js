@@ -18,7 +18,7 @@ const css = {
     padding: 0,
     paddingBottom: 2,
     margin: "auto",
-    marginBottom: 10,
+    marginBottom: 20,
   },
   searchBarContainer: {
     backgroundColor: "#ffffffff",
