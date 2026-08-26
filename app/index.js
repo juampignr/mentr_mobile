@@ -178,27 +178,35 @@ export default function Curiosity() {
   };
 
   const exportDB = async () => {
-    const dbPath = await ctx.dumpDB();
+    try {
+      const dbPath = await ctx.dumpDB();
+      const compressedPath = await compressBackup(dbPath);
 
-    const compressedPath = await compressBackup(dbPath);
-
-    setDumpLocation(compressedPath);
-    //await shareAsync(compressedPath);
+      setDumpLocation(compressedPath);
+      //await shareAsync(compressedPath);
+    } catch (error) {
+      //Do something here later...
+    }
   };
 
   const importDB = async () => {
-    await ctx.db.closeAsync();
 
-    const decompressedPath = await decompressBackup();
-    const dbFile = new File(decompressedPath);
+    try {
+      await ctx.db.closeAsync();
 
-    const oldDbPath = new File(`file://${ctx.db.databasePath}`);
+      const decompressedPath = await decompressBackup();
+      const dbFile = new File(decompressedPath);
 
-    oldDbPath.delete();
-    dbFile.move(oldDbPath);
+      const oldDbPath = new File(`file://${ctx.db.databasePath}`);
 
-    ctx.setDB(await openDatabaseAsync("mentr.db"));
-    //await ctx.db.openAsync(dbFile.uri);
+      oldDbPath.delete();
+      dbFile.move(oldDbPath);
+
+      ctx.setDB(await openDatabaseAsync("mentr.db"));
+      //await ctx.db.openAsync(dbFile.uri);
+    } catch (error) {
+      //Do something here later...
+    }
   };
 
   useAsyncEffect(async () => {
