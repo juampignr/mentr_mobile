@@ -82,15 +82,10 @@ export default function Card({ children, firstTopic, isMentoring }) {
       ctx.discipleLanguage,
     );
 
-    let result
+    let  result = await gandalf.go();
 
-    try {
-      result = await gandalf.go();
-    } catch (error) {
-      result = [];
-    }
-
-    if (!result.length) return;
+    console.log(result)
+    if (!Object.values(result).length) return;
 
     ctx.setInterestChain(result);
     ctx.setStatus("mentoring");

@@ -40,9 +40,6 @@ export default function Shallow() {
   const [loadingText, setLoadingText] = useState(false);
 
   const [swipeableView, setSwipeableView] = useState([]);
-  const [paginate, setPaginate] = useState(0);
-  const [momentum, setMomentum] = useState(0);
-  const [cardsMatrixLimits, setCardsMatrixLimits] = useState({});
   const [isSearching, setIsSearching] = useState(false);
   const [topics, setTopics] = useState([]);
 
@@ -182,16 +179,6 @@ export default function Shallow() {
         summary: page.extract?.trim(),
       }));
 
-      /*
-      if (data?.continue) {
-        const newCardsMatrixLimits = cardsMatrixLimits;
-
-        newCardsMatrixLimits[currentPosition.current] =
-          data?.continue?.excontinue;
-        setCardsMatrixLimits(newCardsMatrixLimits);
-      }
-      */
-
       topicData = Object.values(topicData.query.pages)[0];
       setCardsMatrix((oldMatrix) => ({
         ...oldMatrix,
@@ -217,14 +204,12 @@ export default function Shallow() {
     currentPosition.current = currentPosition.current + 1;
   };
 
-  const paginationHandler = async (event) => {
-    setPaginate(1);
-  };
-
   const initialize = async () => {
 
+    let topicBody = {};
+
     try {
-      let topicBody = await ctx.wikiFetch(topic, {
+      const topicBodyResult = await ctx.wikiFetch(topic, {
         action: "query",
         prop: "extracts",
         exintro: true,
@@ -233,7 +218,7 @@ export default function Shallow() {
         titles: topic,
       });
 
-      topicBody = Object.values(topicBody.query.pages)[0];
+      topicBody = Object.values(topicBodyResult.query.pages)[0];
     } catch (error) {
       topicBody = {};
       console.error(`Mentr (ERROR.HIGH) Unable to fetch topic body on shallow: ${error.message}`);
@@ -351,14 +336,6 @@ export default function Shallow() {
     if (topicBody?.extract)
       allData = { [topicBody?.pageid.toString()]: { title: topicBody?.title, summary: topicBody?.extract }, ...allData };
 
-    /*
-    if (data?.continue) {
-      const newCardsMatrixLimits = cardsMatrixLimits;
-
-      newCardsMatrixLimits["0"] = data?.continue?.excontinue;
-      setCardsMatrixLimits(newCardsMatrixLimits);
-    }
-    */
     setRelated(allData);
     setIsLoading(false);
 
@@ -482,9 +459,6 @@ export default function Shallow() {
         <FlatList
           data={cards}
           contentContainerStyle={{ alignItems: "center" }}
-          onEndReached={paginationHandler}
-          onMomentumScrollBegin={() => setMomentum(1)}
-          onMomentumScrollEnd={() => setMomentum(0)}
           renderItem={(item) => (
             <Card firstTopic={topic} isMentoring={ctx.hasMentored.current}>
               {item}
@@ -496,74 +470,6 @@ export default function Shallow() {
     ));
     setSwipeableView(newView);
   }, [cardsMatrix]);
-
-  useAsyncEffect(async () => {
-    if (paginate && !momentum) {
-      let updatedCards = cardsMatrix["" + currentPosition.current - 2];
-
-      const updatedSwipeableView = swipeableView;
-
-      let data = {};
-      try {
-        data = await ctx.wikiFetch(updatedCards[0]?.title, {
-          action: "query",
-          generator: "search",
-          gsrsearch: updatedCards[0]?.title,
-          gsrlimit: 100,
-          excontinue: cardsMatrixLimits[currentPosition.current - 1],
-          prop: "extracts",
-          exintro: true,
-          explaintext: true,
-          exsentences: 3,
-        });
-      } catch (error) {
-        console.log(`Mentr (ERROR.LOW) Unable to paginate on shallow: ${error.message}`);
-      }
-
-      let pages = Object.values(data.query.pages).filter(
-        (page) => page.extract,
-      );
-
-      let formattedData = pages.map((page) => ({
-        id: page.pageid.toString(),
-        title: page.title,
-        summary: page.extract.trim(),
-      }));
-
-      if (data?.continue) {
-        setCardsMatrixLimits({
-          ...cardsMatrixLimits,
-          [currentPosition.current - 2]: data?.continue?.excontinue,
-        });
-      }
-
-      updatedCards = [...updatedCards, ...formattedData];
-
-      setCardsMatrix({
-        ...cardsMatrix,
-        [`${currentPosition.current - 2}`]: updatedCards,
-      });
-
-      /*
-      updatedSwipeableView[currentPosition.current - 2] = (
-        <View>
-          <FlatList
-            data={updatedCards}
-            contentContainerStyle={{ alignItems: "center" }}
-            onEndReached={paginationHandler}
-            onMomentumScrollBegin={() => setMomentum(1)}
-            onMomentumScrollEnd={() => setMomentum(0)}
-            renderItem={(item) => <Card firstTopic={topic}>{item}</Card>}
-            keyExtractor={(item) => item.id}
-          />
-        </View>
-      );
-
-      setSwipeableView(updatedSwipeableView);
-      */
-      setPaginate(0);
-    }
-  }, [paginate, momentum]);
 
   useAsyncEffect(async () => {
     let queryResult = [];
