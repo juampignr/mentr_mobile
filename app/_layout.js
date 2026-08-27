@@ -218,7 +218,7 @@ export default Sentry.wrap(function Layout() {
             : 5000; // Wikimedia's own guidance: 5s minimum when Retry-After is absent
 
             await sleep(serverDelay);
-            return _wikiFetch(searchTerm, params, language, attempt + 1);
+            return _wikiFetch(searchTerm, params, attempt + 1);
       }
     }
   };
