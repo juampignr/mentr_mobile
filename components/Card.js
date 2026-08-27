@@ -21,7 +21,7 @@ export default function Card({ children, firstTopic, isMentoring }) {
   let title = children?.item?.title;
   let summary = children?.item?.summary;
 
-  summary = summary.length >= 400 ? summary.slice(0, 400) + "..." : summary;
+  summary = summary?.length >= 400 ? summary?.slice(0, 400) + "..." : summary;
 
   const [cardStyle, setCardStyle] = useState(
     isMentoring ? { ...css.card, borderColor: "#ffa020aa" } : css.card,
@@ -82,9 +82,15 @@ export default function Card({ children, firstTopic, isMentoring }) {
       ctx.discipleLanguage,
     );
 
-    const result = await gandalf.go();
+    let result
 
-    if (!result) return;
+    try {
+      result = await gandalf.go();
+    } catch (error) {
+      result = [];
+    }
+
+    if (!result.length) return;
 
     ctx.setInterestChain(result);
     ctx.setStatus("mentoring");

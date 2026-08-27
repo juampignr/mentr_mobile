@@ -50,29 +50,6 @@ export default function Shallow() {
 
   ctx?.setTopic(topic);
 
-  const searchTopic = async (topic) => {
-    const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(topic)}&gsrlimit=100&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mentr/1.0.0", // required by Wikipedia API
-      },
-    });
-
-    const data = await response.json();
-
-    let pages = Object.values(data.query.pages).filter((page) => page.extract);
-
-    pages = pages.filter((page) => page.extract);
-
-    const formattedData = pages.map((page) => ({
-      id: page.pageid.toString(),
-      title: page.title,
-      summary: page.extract.trim(),
-    }));
-
-    return formattedData;
-  };
-
   const populateCards = async (pageno) => {
     let scopedRelated = [];
 
@@ -312,8 +289,9 @@ export default function Shallow() {
       };
     }
 
-    allData = { [topicBody?.pageid.toString()]: { title: topicBody?.title, summary: topicBody?.extract }, ...allData };
-    console.log(allData);
+    if (topicBody?.extract)
+      allData = { [topicBody?.pageid.toString()]: { title: topicBody?.title, summary: topicBody?.extract }, ...allData };
+
     /*
     if (data?.continue) {
       const newCardsMatrixLimits = cardsMatrixLimits;
@@ -355,15 +333,16 @@ export default function Shallow() {
     }
 
     for (const interest of allInterests) {
-      const interestURL = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&exsentences=3&titles=${encodeURIComponent(interest?.name)}&format=json&origin=*`;
-      const response = await fetch(interestURL, {
-        headers: {
-          "User-Agent": "Mentr/1.0.0", // required by Wikipedia API
-        },
+      const interestResult = await ctx.wikiFetch(interest?.name, {
+        action: "query",
+        prop: "extracts",
+        exintro: true,
+        explaintext: true,
+        exsentences: 3,
+        titles: interest?.name,
       });
 
-      let interestData = await response?.json();
-      interestData = Object.values(interestData?.query?.pages)[0];
+      let interestData = Object.values(interestResult?.query?.pages ?? {})[0];
 
       if (interestData?.extract) {
         if (allData[interestData?.pageid.toString()]) {
@@ -461,15 +440,17 @@ export default function Shallow() {
 
       const updatedSwipeableView = swipeableView;
 
-      const url = `https://${ctx.discipleLanguage}.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(updatedCards[0]?.title)}&gsrlimit=100&excontinue=${cardsMatrixLimits[currentPosition.current - 1]}&prop=extracts&exintro=true&explaintext=true&exsentences=3&format=json&origin=*`;
-
-      const response = await fetch(url, {
-        headers: {
-          "User-Agent": "Mentr/1.0.0", // required by Wikipedia API
-        },
+      const data = await ctx.wikiFetch(updatedCards[0]?.title, {
+        action: "query",
+        generator: "search",
+        gsrsearch: updatedCards[0]?.title,
+        gsrlimit: 100,
+        excontinue: cardsMatrixLimits[currentPosition.current - 1],
+        prop: "extracts",
+        exintro: true,
+        explaintext: true,
+        exsentences: 3,
       });
-
-      const data = await response.json();
 
       let pages = Object.values(data.query.pages).filter(
         (page) => page.extract,

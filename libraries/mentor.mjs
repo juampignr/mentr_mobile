@@ -48,7 +48,6 @@ export default class Mentor {
 
     if (!orderedInterests.length) return [];
 
-    // orderedInterests is already sorted by total time spent, so [0] is it.
     const topPick = () => [
       { title: orderedInterests[0].name, sourceCount: 1, count: 0 },
     ];
@@ -66,11 +65,17 @@ export default class Mentor {
     // title -> how many times it was credited in total, used only as a
     // tiebreaker among topics that bridge the same number of interests.
     const countByTopic = new Map();
+    // Titles known to live in the Category namespace (ns === 14). This is
+    // the language-agnostic replacement for sniffing an English "Category:"
+    // prefix, since every other Wikipedia language uses its own localized
+    // prefix (e.g. "Categoría:", "Kategorie:", "Catégorie:").
+    const categoryTitles = new Set();
 
-    const credit = (title, sourceName) => {
+    const credit = (title, sourceName, isCategory = false) => {
       if (!sourcesByTopic.has(title)) sourcesByTopic.set(title, new Set());
       sourcesByTopic.get(title).add(sourceName);
       countByTopic.set(title, (countByTopic.get(title) ?? 0) + 1);
+      if (isCategory) categoryTitles.add(title);
     };
 
     for (const interest of orderedInterests) {
@@ -91,23 +96,26 @@ export default class Mentor {
         if (json?.status === "error") continue;
         pages = Object.values(json?.query?.pages ?? {});
       } catch (error) {
-        continue;
+        pages = [];
       }
 
       for (const page of pages) {
         for (const category of page?.categories ?? []) {
           if (this.categoryNoise.every((p) => !p.test(category.title)))
-            credit(category.title, interest.name);
+            credit(category.title, interest.name, true);
         }
 
         for (const link of page?.links ?? []) {
           if (this.linkNoise.some((p) => p.test(link.title))) continue;
-          credit(link.title, interest.name);
+          // A link can itself point at a Category: page (ns 14) — credit it
+          // as a category so it's routed through categorymembers below
+          // instead of being treated as a plain topic.
+          credit(link.title, interest.name, link.ns === 14);
         }
 
         for (const link of page?.linkshere ?? []) {
           if (this.linkNoise.some((p) => p.test(link.title))) continue;
-          credit(link.title, interest.name);
+          credit(link.title, interest.name, link.ns === 14);
         }
       }
     }
@@ -130,12 +138,14 @@ export default class Mentor {
     // surfacing a tangent pulled from a single source's link graph.
     if (!commonGround.length) return topPick();
 
-    // Split the overlap set into plain pages and category nodes.
+    // Split the overlap set into plain pages and category nodes. Uses the
+    // ns === 14 signal collected during crediting instead of matching the
+    // English "Category:" prefix, so this also works for non-English wikis.
     const categoryItems = commonGround.filter((c) =>
-      c.title.startsWith("Category:"),
+      categoryTitles.has(c.title),
     );
     const pageItems = commonGround.filter(
-      (c) => !c.title.startsWith("Category:"),
+      (c) => !categoryTitles.has(c.title),
     );
 
     // For the single highest-occurring category, fetch its member pages and
