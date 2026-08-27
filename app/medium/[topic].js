@@ -115,8 +115,7 @@ export default function Medium() {
             `SELECT * FROM interest WHERE disciple_email = 'juampi.gnr@gmail.com' AND name = '${topic}'`,
           );
         } catch (error) {
-          console.log(error);
-          // Best effort here
+          console.info(`Mentr (ERROR.MEDIUM) Unable to record chain of interest on focus: ${error.message}`);
         }
 
         const estimatedSpent =
@@ -146,14 +145,6 @@ export default function Medium() {
 
   useAsyncEffect(async () => {
     const wiki = new RNWiki(ctx.discipleLanguage);
-
-    const parseJSON = (jsonString) => {
-      try {
-        return JSON.parse(jsonString);
-      } catch (error) {
-        return null;
-      }
-    };
 
     const result = await wiki.getPage(topic);
 
@@ -206,7 +197,7 @@ export default function Medium() {
         queryResult = data[1]; // The second element contains the list of suggestions
 
       } catch (error) {
-        console.error("Error fetching data from Wikipedia:", error);
+        console.info(`Mentr (ERROR.MEDIUM) Unable to search on medium: ${error.message}`);
       }
 
       for (const topic of queryResult) {
