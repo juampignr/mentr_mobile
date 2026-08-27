@@ -56,17 +56,24 @@ export default function Shallow() {
     if(Object.keys(cardsMatrix).length) {
       scopedRelated = cardsMatrix["0"];
 
-      let topicData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
-        action: "query",
-        prop: "extracts|categories",
-        exintro: true,
-        explaintext: true,
-        exsentences: 3,
-        titles: scopedRelated[pageno]?.title,
-      });
+      let topicData
+
+      try {
+        topicData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
+          action: "query",
+          prop: "extracts|categories",
+          exintro: true,
+          explaintext: true,
+          exsentences: 3,
+          titles: scopedRelated[pageno]?.title,
+        });
+      } catch (error) {
+        topicData = {};
+        console.error(`Mentr (ERROR.HIGH) Unable to fetch topic categories on shallow: ${error.message}`);
+      }
 
       let topicCategories =
-        Object.values(topicData.query.pages)[0]?.categories ?? [];
+        Object.values(topicData?.query?.pages)[0]?.categories ?? [];
 
       topicCategories = topicCategories.filter((category) => {
         const categoryNoise = [
@@ -83,45 +90,66 @@ export default function Shallow() {
         return !categoryNoise.some((re) => re.test(category?.title));
       });
 
-      let categoryData = await ctx.wikiFetch(topicCategories[0]?.title, {
-        action: "query",
-        generator: "categorymembers",
-        gcmtitle: topicCategories[0]?.title, // g prefix
-        gcmnamespace: "0", // g prefix
-        gcmlimit: "50", // g prefix
-        prop: "extracts",
-        exintro: true,
-        explaintext: true,
-        exsentences: 3,
-      });
+      let categoryData = {};
+
+      try {
+        categoryData = await ctx.wikiFetch(topicCategories[0]?.title, {
+          action: "query",
+          generator: "categorymembers",
+          gcmtitle: topicCategories[0]?.title, // g prefix
+          gcmnamespace: "0", // g prefix
+          gcmlimit: "50", // g prefix
+          prop: "extracts",
+          exintro: true,
+          explaintext: true,
+          exsentences: 3,
+        });
+      } catch (error) {
+        categoryData = {};
+        console.error(`Mentr (ERROR.HIGH) Unable to fetch category members on shallow: ${error.message}`);
+      }
 
       categoryData = categoryData?.query?.pages;
 
-      let linksData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
-        action: "query",
-        generator: "links",
-        titles: scopedRelated[pageno]?.title,
-        gplnamespace: "0",
-        gpllimit: "50",
-        prop: "extracts",
-        exintro: true,
-        explaintext: true,
-        exsentences: 3,
-      });
+      let linksData = {};
+
+      try {
+        linksData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
+          action: "query",
+          generator: "links",
+          titles: scopedRelated[pageno]?.title,
+          gplnamespace: "0",
+          gpllimit: "50",
+          prop: "extracts",
+          exintro: true,
+          explaintext: true,
+          exsentences: 3,
+        });
+      } catch (error) {
+        linksData = {};
+        console.error(`Mentr (ERROR.HIGH) Unable to fetch links on shallow: ${error.message}`);
+      }
 
       linksData = linksData?.query?.pages;
 
-      let linksHereData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
-        action: "query",
-        generator: "linkshere",
-        titles: scopedRelated[pageno]?.title,
-        gplnamespace: "0",
-        gpllimit: "50",
-        prop: "extracts",
-        exintro: true,
-        explaintext: true,
-        exsentences: 3,
-      });
+      let linksHereData = {};
+
+      try {
+        linksHereData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
+          action: "query",
+          generator: "linkshere",
+          titles: scopedRelated[pageno]?.title,
+          gplnamespace: "0",
+          gpllimit: "50",
+          prop: "extracts",
+          exintro: true,
+          explaintext: true,
+          exsentences: 3,
+        });
+      } catch (error) {
+        linksHereData = {};
+        console.error(`Mentr (ERROR.HIGH) Unable to fetch links-here on shallow: ${error.message}`);
+      }
 
       linksHereData = linksHereData?.query?.pages;
 
@@ -195,25 +223,37 @@ export default function Shallow() {
 
   const initialize = async () => {
 
-    let topicBody = await ctx.wikiFetch(topic, {
-      action: "query",
-      prop: "extracts",
-      exintro: true,
-      explaintext: true,
-      exsentences: 3,
-      titles: topic,
-    });
+    try {
+      let topicBody = await ctx.wikiFetch(topic, {
+        action: "query",
+        prop: "extracts",
+        exintro: true,
+        explaintext: true,
+        exsentences: 3,
+        titles: topic,
+      });
 
-    topicBody = Object.values(topicBody.query.pages)[0];
+      topicBody = Object.values(topicBody.query.pages)[0];
+    } catch (error) {
+      topicBody = {};
+      console.error(`Mentr (ERROR.HIGH) Unable to fetch topic body on shallow: ${error.message}`);
+    }
 
-    let topicCategoriesData = await ctx.wikiFetch(topic, {
-      action: "query",
-      prop: "categories",
-      titles: topic,
-    });
+    let topicCategoriesData = {};
+
+    try {
+      topicCategoriesData = await ctx.wikiFetch(topic, {
+        action: "query",
+        prop: "categories",
+        titles: topic,
+      });
+    } catch (error) {
+      topicCategoriesData = {};
+      console.error(`Mentr (ERROR.HIGH) Unable to fetch topic categories on shallow: ${error.message}`);
+    }
 
     let topicCategories =
-      Object.values(topicCategoriesData.query.pages)[0]?.categories ?? [];
+      Object.values(topicCategoriesData?.query?.pages)[0]?.categories ?? [];
 
     topicCategories = topicCategories.filter((category) => {
       const categoryNoise = [
@@ -233,46 +273,65 @@ export default function Shallow() {
     let topicCategoryMembers;
 
     if (topicCategories[0]?.title) {
-      topicCategoryMembers = await ctx.wikiFetch(topicCategories[0]?.title, {
-        action: "query",
-        generator: "categorymembers",
-        gcmtitle: topicCategories[0]?.title, // g prefix
-        gcmnamespace: "0", // g prefix
-        gcmlimit: "100", // g prefix
-        prop: "extracts",
-        exintro: true,
-        explaintext: true,
-        exsentences: 3,
-      });
+      try {
+        topicCategoryMembers = await ctx.wikiFetch(topicCategories[0]?.title, {
+          action: "query",
+          generator: "categorymembers",
+          gcmtitle: topicCategories[0]?.title, // g prefix
+          gcmnamespace: "0", // g prefix
+          gcmlimit: "100", // g prefix
+          prop: "extracts",
+          exintro: true,
+          explaintext: true,
+          exsentences: 3,
+        });
+      } catch (error) {
+        topicCategoryMembers = {};
+        console.error(`Mentr (ERROR.HIGH) Unable to fetch topic category members on shallow: ${error.message}`);
+      }
     }
 
-    let pages = Object.values(topicCategoryMembers?.query.pages).filter((page) => page.extract);
+    let pages = Object.values(topicCategoryMembers?.query?.pages).filter((page) => page.extract);
 
     if (pages.length === 0) {
 
-      let linksData = await ctx.wikiFetch(topic, {
-        action: "query",
-        generator: "links",
-        titles: topic,
-        gplnamespace: "0",
-        gpllimit: "50",
-        prop: "extracts",
-        exintro: true,
-        explaintext: true,
-        exsentences: 3,
-      });
+      let linksData = {};
 
-      let linksHereData = await ctx.wikiFetch(topic, {
-        action: "query",
-        generator: "linkshere",
-        titles: topic,
-        gplnamespace: "0",
-        gpllimit: "50",
-        prop: "extracts",
-        exintro: true,
-        explaintext: true,
-        exsentences: 3,
-      });
+      let linksHereData = {};
+
+      try {
+        linksHereData = await ctx.wikiFetch(topic, {
+          action: "query",
+          generator: "linkshere",
+          titles: topic,
+          gplnamespace: "0",
+          gpllimit: "50",
+          prop: "extracts",
+          exintro: true,
+          explaintext: true,
+          exsentences: 3,
+        });
+      } catch (error) {
+        linksHereData = {};
+        console.log(`Mentr (ERROR.LOW) Unable to fetch links-here on shallow: ${error.message}`);
+      }
+
+      try {
+        linksData = await ctx.wikiFetch(topic, {
+          action: "query",
+          generator: "links",
+          titles: topic,
+          gplnamespace: "0",
+          gpllimit: "50",
+          prop: "extracts",
+          exintro: true,
+          explaintext: true,
+          exsentences: 3,
+        });
+      } catch (error) {
+        linksData = {};
+        console.log(`Mentr (ERROR.LOW) Unable to fetch links on shallow: ${error.message}`);
+      }
 
       pages = Object.values({ ...linksData.query.pages, ...linksHereData.query.pages }).filter((page) => page.extract);
 
@@ -316,8 +375,8 @@ export default function Shallow() {
         `,
       );
     } catch (error) {
-      console.log("Error fetching interests:");
-      // Do something later here
+
+      console.error(`Mentr (ERROR.HIGH) Unable to fetch interests on initialization: ${error.message}`);
     }
 
     let combinedAllData = [];
@@ -333,27 +392,31 @@ export default function Shallow() {
     }
 
     for (const interest of allInterests) {
-      const interestResult = await ctx.wikiFetch(interest?.name, {
-        action: "query",
-        prop: "extracts",
-        exintro: true,
-        explaintext: true,
-        exsentences: 3,
-        titles: interest?.name,
-      });
-
-      let interestData = Object.values(interestResult?.query?.pages ?? {})[0];
-
-      if (interestData?.extract) {
-        if (allData[interestData?.pageid.toString()]) {
-          delete allData[interestData?.pageid.toString()];
-        }
-
-        combinedAllData.push({
-          id: interestData?.pageid.toString(),
-          title: interestData?.title,
-          summary: interestData?.extract.trim(),
+      try {
+        const interestResult = await ctx.wikiFetch(interest?.name, {
+          action: "query",
+          prop: "extracts",
+          exintro: true,
+          explaintext: true,
+          exsentences: 3,
+          titles: interest?.name,
         });
+
+        let interestData = Object.values(interestResult?.query?.pages ?? {})[0];
+
+        if (interestData?.extract) {
+          if (allData[interestData?.pageid.toString()]) {
+            delete allData[interestData?.pageid.toString()];
+          }
+
+          combinedAllData.push({
+            id: interestData?.pageid.toString(),
+            title: interestData?.title,
+            summary: interestData?.extract.trim(),
+          });
+        }
+      } catch (error) {
+        console.log(`Mentr (ERROR.LOW) Unable to fetch interest on shallow: ${error.message}`);
       }
     }
 
@@ -440,17 +503,22 @@ export default function Shallow() {
 
       const updatedSwipeableView = swipeableView;
 
-      const data = await ctx.wikiFetch(updatedCards[0]?.title, {
-        action: "query",
-        generator: "search",
-        gsrsearch: updatedCards[0]?.title,
-        gsrlimit: 100,
-        excontinue: cardsMatrixLimits[currentPosition.current - 1],
-        prop: "extracts",
-        exintro: true,
-        explaintext: true,
-        exsentences: 3,
-      });
+      let data = {};
+      try {
+        data = await ctx.wikiFetch(updatedCards[0]?.title, {
+          action: "query",
+          generator: "search",
+          gsrsearch: updatedCards[0]?.title,
+          gsrlimit: 100,
+          excontinue: cardsMatrixLimits[currentPosition.current - 1],
+          prop: "extracts",
+          exintro: true,
+          explaintext: true,
+          exsentences: 3,
+        });
+      } catch (error) {
+        console.log(`Mentr (ERROR.LOW) Unable to paginate on shallow: ${error.message}`);
+      }
 
       let pages = Object.values(data.query.pages).filter(
         (page) => page.extract,
@@ -533,7 +601,7 @@ export default function Shallow() {
 
         queryResult = data[1]; // The second element contains the list of suggestions
       } catch (error) {
-        console.error("Error fetching data from Wikipedia:", error);
+        console.log(`Mentr (ERROR.LOW) Unable to fetch search suggestions on shallow: ${error.message}`);
       }
 
       for (const topic of queryResult) {

@@ -110,7 +110,7 @@ export default function Section({ children }) {
             try {
               parsedMessage = JSON.parse(event.nativeEvent.data);
             } catch (error) {
-              //Best effort here
+              console.log(`Mentr (ERROR.LOW) Unable to parse WebView message on medium: ${error.message}`);
             }
 
             if (parsedMessage?.type === "setHeight") {
@@ -127,7 +127,7 @@ export default function Section({ children }) {
 
                 modalLink.current = parsedMessage?.url;
               } catch (error) {
-                alert(error);
+                console.log(`Mentr (ERROR.Low) Unable to search on medium: ${error.message}`);
               }
             }
           }}

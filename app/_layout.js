@@ -207,10 +207,7 @@ export default Sentry.wrap(function Layout() {
       const retryable = throttleStatus || error.retryAfter !== null;
 
       if (!retryable || attempt >= maxRetries) {
-        return {
-          status: "error",
-          error: error?.message || "Unknown error",
-        };
+        throw new Error(error?.message || "Unknown error");
       } else {
         const serverDelay =
           error.retryAfter && !Number.isNaN(error.retryAfter)

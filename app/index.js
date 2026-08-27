@@ -185,6 +185,7 @@ export default function Curiosity() {
       setDumpLocation(compressedPath);
       //await shareAsync(compressedPath);
     } catch (error) {
+      console.info(`Mentr (ERROR.MEDIUM) Unable to export SQLite DB: ${error.message}`);
       //Do something here later...
     }
   };
@@ -205,7 +206,7 @@ export default function Curiosity() {
       ctx.setDB(await openDatabaseAsync("mentr.db"));
       //await ctx.db.openAsync(dbFile.uri);
     } catch (error) {
-      //Do something here later...
+      console.info(`Mentr (ERROR.MEDIUM) Unable to import SQLite DB: ${error.message}`);
     }
   };
 
@@ -225,7 +226,8 @@ export default function Curiosity() {
 
         console.log(queryResult)
       } catch (error) {
-        console.error("Error fetching data from Wikipedia:", error);
+
+        console.log(`Mentr (ERROR.LOW) Unable to fetch Wikipedia data: ${error.message}`);
       }
 
       for (const topic of queryResult) {
