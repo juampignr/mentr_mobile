@@ -180,33 +180,14 @@ export default function Medium() {
     }
   }, []);
 
-  useAsyncEffect(async () => {
-    let queryResult = [];
-    let searchSuggestions = [];
-
+  useEffect(() => {
     if (ctx.status?.action === "search") {
-      try {
-        setIsSearching(true);
-
-        const data = await ctx.wikiFetch(ctx.status?.value, {
-          action: "opensearch",
-          search: ctx.status?.value,
-          namespace: "0",
-        });
-
-        queryResult = data[1]; // The second element contains the list of suggestions
-
-      } catch (error) {
-        console.info(`Mentr (ERROR.MEDIUM) Unable to search on medium: ${error.message}`);
-      }
-
-      for (const topic of queryResult) {
-        searchSuggestions.push(<Pill>{topic}</Pill>);
-      }
-
-      setTopics(searchSuggestions);
+      setIsSearching(true);
+      setTopics(ctx.searchResults.map((topic) => <Pill>{topic}</Pill>));
+    } else {
+      setIsSearching(false);
     }
-  }, [ctx.status]);
+  }, [ctx.searchResults]);
 
   return (
     (isSearching && <PillsView>{topics}</PillsView>) || (

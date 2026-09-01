@@ -17,6 +17,7 @@ import chalk from "chalk";
 import logo from "../assets/images/icon.png";
 import css from "../styles/global.js";
 import * as Sentry from '@sentry/react-native';
+import { generateDynamic } from "expo-router/build/getRoutesCore.js";
 
 
 let show = (arg) => {
@@ -210,33 +211,11 @@ export default function Curiosity() {
     }
   };
 
-  useAsyncEffect(async () => {
-    let queryResult = [];
-    let searchSuggestions = [];
-
-    if (ctx.status.action === "search") {
-      try {
-        const data = await ctx.wikiFetch(ctx.status?.value, {
-          action: "opensearch",
-          search: ctx.status?.value,
-          namespace: "0",
-        });
-
-        queryResult = data[1]; // The second element contains the list of suggestions
-
-        console.log(queryResult)
-      } catch (error) {
-
-        console.log(`Mentr (ERROR.LOW) Unable to fetch Wikipedia data: ${error.message}`);
-      }
-
-      for (const topic of queryResult) {
-        searchSuggestions.push(<Pill>{topic}</Pill>);
-      }
-
-      setTopics(searchSuggestions);
+  useEffect(() => {
+    if (ctx.status?.action === "search") {
+      setTopics(ctx.searchResults.map((topic) => <Pill>{topic}</Pill>));
     }
-  }, [ctx.status]);
+  }, [ctx.searchResults]);
 
   useEffect(() => {
     //Sentry.showFeedbackWidget();

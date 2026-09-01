@@ -224,105 +224,19 @@ export default function Shallow() {
       console.error(`Mentr (ERROR.HIGH) Unable to fetch topic body on shallow: ${error.message}`);
     }
 
-    let topicCategoriesData = {};
+    let topicRelatedData = {};
 
     try {
-      topicCategoriesData = await ctx.wikiFetch(topic, {
-        action: "query",
-        prop: "categories",
-        titles: topic,
-      });
+      topicRelatedData = await ctx.wikiFetch(`like:${topic}`);
     } catch (error) {
-      topicCategoriesData = {};
-      console.error(`Mentr (ERROR.HIGH) Unable to fetch topic categories on shallow: ${error.message}`);
+      topicRelatedData = {};
+      console.error(`Mentr (ERROR.HIGH) Unable to fetch related topics on shallow: ${error.message}`);
     }
 
-    let topicCategories =
-      Object.values(topicCategoriesData?.query?.pages)[0]?.categories ?? [];
+    let pages = Object.values(topicRelatedData?.query?.pages ?? {}).filter((page) => page.extract);
 
-    topicCategories = topicCategories.filter((category) => {
-      const categoryNoise = [
-        /\bstub/i,
-        /^Category:All /i,
-        /^Category:Articles (with|containing|needing)/i,
-        /^Category:Pages (with|using)/i,
-        /^Category:Wikipedia /i,
-        /^Category:CS1 /i,
-        /^Category:Short description/i,
-        /^Category:Commons category/i,
-        /^Category:Use (mdy|dmy) dates/i,
-      ];
-      return !categoryNoise.some((re) => re.test(category?.title));
-    });
-
-    let topicCategoryMembers;
-
-    if (topicCategories[0]?.title) {
-      try {
-        topicCategoryMembers = await ctx.wikiFetch(topicCategories[0]?.title, {
-          action: "query",
-          generator: "categorymembers",
-          gcmtitle: topicCategories[0]?.title, // g prefix
-          gcmnamespace: "0", // g prefix
-          gcmlimit: "100", // g prefix
-          prop: "extracts",
-          exintro: true,
-          explaintext: true,
-          exsentences: 3,
-        });
-      } catch (error) {
-        topicCategoryMembers = {};
-        console.error(`Mentr (ERROR.HIGH) Unable to fetch topic category members on shallow: ${error.message}`);
-      }
-    }
-
-    let pages = Object.values(topicCategoryMembers?.query?.pages).filter((page) => page.extract);
-
-    if (pages.length === 0) {
-
-      let linksData = {};
-
-      let linksHereData = {};
-
-      try {
-        linksHereData = await ctx.wikiFetch(topic, {
-          action: "query",
-          generator: "linkshere",
-          titles: topic,
-          gplnamespace: "0",
-          gpllimit: "50",
-          prop: "extracts",
-          exintro: true,
-          explaintext: true,
-          exsentences: 3,
-        });
-      } catch (error) {
-        linksHereData = {};
-        console.log(`Mentr (ERROR.LOW) Unable to fetch links-here on shallow: ${error.message}`);
-      }
-
-      try {
-        linksData = await ctx.wikiFetch(topic, {
-          action: "query",
-          generator: "links",
-          titles: topic,
-          gplnamespace: "0",
-          gpllimit: "50",
-          prop: "extracts",
-          exintro: true,
-          explaintext: true,
-          exsentences: 3,
-        });
-      } catch (error) {
-        linksData = {};
-        console.log(`Mentr (ERROR.LOW) Unable to fetch links on shallow: ${error.message}`);
-      }
-
-      pages = Object.values({ ...linksData.query.pages, ...linksHereData.query.pages }).filter((page) => page.extract);
-
-      if (pages.length === 0)
-        pages = [topicBody]
-    }
+    if (pages.length === 0)
+      pages = [topicBody];
 
     let allData = {};
 
@@ -472,9 +386,6 @@ export default function Shallow() {
   }, [cardsMatrix]);
 
   useAsyncEffect(async () => {
-    let queryResult = [];
-    let searchSuggestions = [];
-
     if (ctx.status === "loading") {
       setIsLoading(true);
       setLoadingText(ctx.loadingText);
@@ -494,29 +405,16 @@ export default function Shallow() {
         ctx.setLoadingText(false);
       }, 3000);
     }
-
-    if (ctx.status?.action === "search") {
-      try {
-        setIsSearching(true);
-
-        const data = await ctx.wikiFetch(ctx.status?.value, {
-          action: "opensearch",
-          search: ctx.status?.value,
-          namespace: "0",
-        });
-
-        queryResult = data[1]; // The second element contains the list of suggestions
-      } catch (error) {
-        console.log(`Mentr (ERROR.LOW) Unable to fetch search suggestions on shallow: ${error.message}`);
-      }
-
-      for (const topic of queryResult) {
-        searchSuggestions.push(<Pill>{topic}</Pill>);
-      }
-
-      setTopics(searchSuggestions);
-    }
   }, [ctx.status]);
+
+  useEffect(() => {
+    if (ctx.status?.action === "search") {
+      setIsSearching(true);
+      setTopics(ctx.searchResults.map((topic) => <Pill>{topic}</Pill>));
+    } else {
+      setIsSearching(false);
+    }
+  }, [ctx.searchResults]);
 
   return (
     (isLoading && <Spinner text={ctx.loadingText} />) ||

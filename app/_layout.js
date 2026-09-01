@@ -58,7 +58,7 @@ export default Sentry.wrap(function Layout() {
 
   const [chain, setChain] = useState({});
   const [status, setStatus] = useState(JSON.stringify({ action: "loading" }));
-  const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
   const [loadingText, setLoadingText] = useState(false);
 
   const [topic, setTopic] = useState("");
@@ -142,13 +142,15 @@ export default Sentry.wrap(function Layout() {
       if (!params) {
         url.searchParams.set("action", "query");
         url.searchParams.set("generator", "search");
-        url.searchParams.set("gsrsearch", encodeURIComponent(searchTerm));
+        url.searchParams.set("gsrsearch", searchTerm?.includes("like:") ? `morelike:${searchTerm.replace("like:", "")}` : searchTerm);
         url.searchParams.set("gsrlimit", "50");
         url.searchParams.set("prop", "extracts");
         url.searchParams.set("exintro", "true");
         url.searchParams.set("explaintext", "true");
         url.searchParams.set("exsentences", "3");
         url.searchParams.set("maxlag", "5");
+        url.searchParams.set("namespace", "0");
+
         console.log(url.toString());
       } else {
         const safeParams =
@@ -160,8 +162,16 @@ export default Sentry.wrap(function Layout() {
           url.searchParams.set(key, String(value));
         }
 
+        if (searchTerm?.includes("like:")) {
+          url.searchParams.set("gsrsearch", `morelike:${searchTerm.replace("like:", "")}`);
+        }
+
         if (!url.searchParams.has("maxlag")) {
           url.searchParams.set("maxlag", "5");
+        }
+
+        if (!url.searchParams.has("namespace")) {
+          url.searchParams.set("namespace", "0");
         }
       }
 
@@ -219,6 +229,42 @@ export default Sentry.wrap(function Layout() {
       }
     }
   };
+
+  const _search = async (searchTerm) => {
+    try {
+      let queryResult = [];
+
+      let data = await wikiFetch(searchTerm, {
+        action: "opensearch",
+        search: searchTerm,
+        namespace: "0",
+      });
+
+      queryResult = data[1]; // The second element contains the list of suggestions
+
+      if (queryResult.length && queryResult.length <= 5) {
+        data = await wikiFetch(`like:${queryResult[0]}`);
+
+        data = Object.values(data?.query?.pages ?? {});
+        data = data.map((element) => element?.title);
+
+        queryResult = [...queryResult, ...data]; // The second element contains the list of suggestions
+      }
+
+      setSearchResults(queryResult);
+    } catch (error) {
+      setSearchResults([]);
+      console.log(`Mentr (ERROR.LOW) Unable to fetch Wikipedia data: ${error.message}`);
+    }
+  };
+
+  useEffect(() => {
+    if (status?.action === "search") {
+      _search(status?.value);
+    } else {
+      setSearchResults([]);
+    }
+  }, [status]);
 
   const SkipButton = (props) => (
     <TouchableOpacity
@@ -355,8 +401,7 @@ export default Sentry.wrap(function Layout() {
         setChain: setChain,
         status: status,
         setStatus: setStatus,
-        search: search,
-        setSearch: setSearch,
+        searchResults: searchResults,
         topic: topic,
         setTopic: setTopic,
         disciple: disciple,
