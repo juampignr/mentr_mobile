@@ -58,7 +58,7 @@ export default function Shallow() {
       try {
         topicData = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
           action: "query",
-          prop: "extracts|categories",
+          prop: "extracts",
           exintro: true,
           explaintext: true,
           exsentences: 3,
@@ -66,47 +66,19 @@ export default function Shallow() {
         });
       } catch (error) {
         topicData = {};
-        console.error(`Mentr (ERROR.HIGH) Unable to fetch topic categories on shallow: ${error.message}`);
+        console.error(`Mentr (ERROR.HIGH) Unable to fetch topic body on shallow: ${error.message}`);
       }
 
-      let topicCategories =
-        Object.values(topicData?.query?.pages)[0]?.categories ?? [];
-
-      topicCategories = topicCategories.filter((category) => {
-        const categoryNoise = [
-          /\bstub/i,
-          /^Category:All /i,
-          /^Category:Articles (with|containing|needing)/i,
-          /^Category:Pages (with|using)/i,
-          /^Category:Wikipedia /i,
-          /^Category:CS1 /i,
-          /^Category:Short description/i,
-          /^Category:Commons category/i,
-          /^Category:Use (mdy|dmy) dates/i,
-        ];
-        return !categoryNoise.some((re) => re.test(category?.title));
-      });
-
-      let categoryData = {};
+      let relatedData = {};
 
       try {
-        categoryData = await ctx.wikiFetch(topicCategories[0]?.title, {
-          action: "query",
-          generator: "categorymembers",
-          gcmtitle: topicCategories[0]?.title, // g prefix
-          gcmnamespace: "0", // g prefix
-          gcmlimit: "50", // g prefix
-          prop: "extracts",
-          exintro: true,
-          explaintext: true,
-          exsentences: 3,
-        });
+        relatedData = await ctx.wikiFetch(`like:${scopedRelated[pageno]?.title}`);
       } catch (error) {
-        categoryData = {};
-        console.error(`Mentr (ERROR.HIGH) Unable to fetch category members on shallow: ${error.message}`);
+        relatedData = {};
+        console.error(`Mentr (ERROR.HIGH) Unable to fetch related topics on shallow: ${error.message}`);
       }
 
-      categoryData = categoryData?.query?.pages;
+      relatedData = relatedData?.query?.pages;
 
       let linksData = {};
 
@@ -151,25 +123,13 @@ export default function Shallow() {
       linksHereData = linksHereData?.query?.pages;
 
       let data = new Map([
-        ...Object.entries(categoryData),
-        ...Object.entries(linksData),
-        ...Object.entries(linksHereData),
+        ...Object.entries(relatedData ?? {}),
+        ...Object.entries(linksData ?? {}),
+        ...Object.entries(linksHereData ?? {}),
       ]);
 
       data = Object.fromEntries(data);
       data = Object.values(data);
-      /*
-      const data = await ctx.wikiFetch(scopedRelated[pageno]?.title, {
-        action: "query",
-        generator: "search",
-        gsrsearch: scopedRelated[pageno]?.title,
-        gsrlimit: 50,
-        prop: "extracts",
-        exintro: true,
-        explaintext: true,
-        exsentences: 3,
-      });
-      */
 
       let pages = data.filter((page) => page.extract);
 
