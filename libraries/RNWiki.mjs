@@ -24,7 +24,7 @@ async function _wikiFetch(
     if (!params) {
       url.searchParams.set("action", "query");
       url.searchParams.set("generator", "search");
-      url.searchParams.set("gsrsearch", encodeURIComponent(searchTerm));
+      url.searchParams.set("gsrsearch", searchTerm?.includes("like:") ? `morelike:${searchTerm.replace("like:", "")}` : encodeURIComponent(searchTerm));
       url.searchParams.set("gsrlimit", "50");
       url.searchParams.set("prop", "extracts");
       url.searchParams.set("exintro", "true");
@@ -39,6 +39,10 @@ async function _wikiFetch(
 
       for (const [key, value] of Object.entries(safeParams)) {
         url.searchParams.set(key, String(value));
+      }
+
+      if (searchTerm?.includes("like:")) {
+        url.searchParams.set("gsrsearch", `morelike:${searchTerm.replace("like:", "")}`);
       }
 
       if (!url.searchParams.has("maxlag")) {

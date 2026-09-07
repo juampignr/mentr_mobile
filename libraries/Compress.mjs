@@ -2,7 +2,7 @@ import { gzipSync, gunzipSync } from "fflate";
 import { File, Directory, Paths } from "expo-file-system";
 import { getDocumentAsync } from "expo-document-picker";
 
-export async function compressBackup(sourcePath, destPath) {
+export async function compressBackup(sourcePath) {
   const dbFile = new File(sourcePath);
 
   if (!dbFile.exists) {

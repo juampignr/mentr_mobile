@@ -28,6 +28,11 @@ export default class Mentor {
     ];
     this.linkNoise = [/identifier/, /User/, /Talk/];
     this.minInterestsForOverlap = 2;
+    // How many of the top bridging categories get expanded into their
+    // member pages. Each expansion is a serialized network call (see
+    // RNWiki's shared semaphore), so this is capped rather than unbounded
+    // to keep prepare()/go() latency predictable.
+    this.maxCategoryExpansions = 3;
   }
 
   async prepare() {
@@ -148,19 +153,20 @@ export default class Mentor {
       (c) => !categoryTitles.has(c.title),
     );
 
-    // For the single highest-occurring category, fetch its member pages and
-    // inject them into the page pool with the category's own relevance scores.
-    // All other category candidates are discarded.
-    if (categoryItems.length > 0) {
-      const topCategory = categoryItems[0]; // list is already sorted desc
+    // For the top-scoring categories (bounded by maxCategoryExpansions),
+    // fetch their member pages and inject them into the page pool with the
+    // category's own relevance scores. Any remaining category candidates
+    // beyond the cap are discarded.
+    const topCategories = categoryItems.slice(0, this.maxCategoryExpansions); // list is already sorted desc
 
+    for (const category of topCategories) {
       try {
         const json = await wikiFetch(
           "",
           {
             action: "query",
             list: "categorymembers",
-            cmtitle: topCategory.title,
+            cmtitle: category.title,
             cmlimit: 50,
             cmtype: "page",
           },
@@ -171,13 +177,13 @@ export default class Mentor {
           for (const member of members) {
             pageItems.push({
               title: member.title,
-              sourceCount: topCategory.sourceCount,
-              count: topCategory.count,
+              sourceCount: category.sourceCount,
+              count: category.count,
             });
           }
         }
       } catch (_) {
-        // fetch failed — category simply dropped
+        // fetch failed — this category simply dropped
       }
     }
 

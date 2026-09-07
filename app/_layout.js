@@ -78,6 +78,7 @@ export default Sentry.wrap(function Layout() {
   const hasMentored = useRef(0);
   const clickedSections = useRef(new Set());
   const allSections = useRef(1);
+  const supportedLanguages = useRef(["en", "es"]);
 
   const timeSemaphore = useRef(false);
 
@@ -99,7 +100,7 @@ export default Sentry.wrap(function Layout() {
   };
 
   const dumpDB = async function () {
-    const backupDir = new Directory(Paths.cache, "mentr_backup");
+    const backupDir = new Directory(Paths?.cache, "mentr_backup");
 
     backupDir.create({ idempotent: true, intermediates: true });
 
@@ -356,7 +357,7 @@ export default Sentry.wrap(function Layout() {
       if (Array.isArray(locales) && locales.length) {
         firstLocale = getLocales()[0];
 
-        if (firstLocale.languageCode.length <= 3) {
+        if (firstLocale.languageCode.length <= 3 && supportedLanguages.current.includes(firstLocale.languageCode)) {
           firstLocale = firstLocale.languageCode;
         } else {
           firstLocale = "en";
