@@ -140,7 +140,12 @@ export default Sentry.wrap(function Layout() {
         `https://${discipleLanguage}.wikipedia.org/w/api.php?format=json&origin=*`,
       );
 
-      if (!params) {
+      const safeParams =
+        params && typeof params === "object" && !Array.isArray(params)
+          ? params
+          : null;
+
+      if (!safeParams) {
         url.searchParams.set("action", "query");
         url.searchParams.set("generator", "search");
         url.searchParams.set("gsrsearch", searchTerm?.includes("like:") ? `morelike:${searchTerm.replace("like:", "")}` : searchTerm);
@@ -154,11 +159,6 @@ export default Sentry.wrap(function Layout() {
 
         console.log(url.toString());
       } else {
-        const safeParams =
-          params && typeof params === "object" && !Array.isArray(params)
-            ? params
-            : {};
-
         for (const [key, value] of Object.entries(safeParams)) {
           url.searchParams.set(key, String(value));
         }
@@ -185,20 +185,20 @@ export default Sentry.wrap(function Layout() {
 
       let data;
 
-      try {
-        data = await response.json();
-      } catch (error) {
-        throw new Error(
-          `Invalid JSON response, please tune your request: HTTP ${response.status}`,
-        );
-      }
-
       if (!response.ok) {
         const retryAfter = response.headers.get("retry-after");
         const err = new Error(`HTTP error ${response.status}`);
         err.status = response.status;
         err.retryAfter = retryAfter ? Number(retryAfter) : null;
         throw err;
+      }
+
+      try {
+        data = await response.json();
+      } catch (error) {
+        throw new Error(
+          `Invalid JSON response, please tune your request: HTTP ${response.status}`,
+        );
       }
 
       if (data?.error) {
@@ -214,6 +214,7 @@ export default Sentry.wrap(function Layout() {
 
       return data;
     } catch (error) {
+
       const throttleStatus = error.status === 429 || error.status === 503;
       const retryable = throttleStatus || error.retryAfter !== null;
 

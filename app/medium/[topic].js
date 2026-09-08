@@ -15,7 +15,7 @@ import { randomUUID } from "expo-crypto";
 import css from "../../styles/global.js";
 import chalk from "chalk";
 import Section from "../../components/Section.js";
-import RNWiki from "../../libraries/RNWiki.mjs";
+import RNWiki from "../../libraries/RNWiki";
 import PillsView from "../../components/PillsView";
 import Pill from "../../components/Pill";
 
