@@ -53,7 +53,8 @@
           "project": "react-native",
           "organization": "jpbehler"
         }
-      ]
+      ],
+      "@sentry/react-native"
     ],
     "extra": {
       "router": {},
