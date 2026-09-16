@@ -297,9 +297,7 @@ export default function Curiosity() {
           />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => { Sentry.showFeedbackWidget() }}>
-          <Image source={logo} style={{ width: 50, height: 50 }} />
-        </TouchableOpacity>
+        <Image source={logo} style={{ width: 50, height: 50 }} />
 
         <TouchableOpacity onPress={dumpAndSave}>
           <FontAwesome6
